@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "helmy/evidence",
+  "title": "Evidence Map",
+  "type": "object",
+  "required": ["$schemaVersion", "referenceId", "records"],
+  "additionalProperties": false,
+  "properties": {
+    "$schemaVersion": { "type": "string" },
+    "referenceId": { "type": "string" },
+    "generatedAt": { "type": "string" },
+    "records": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/record" }
+    }
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "required": ["id", "claim", "value", "status", "method", "source", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(ev|sc)_[0-9]{4,}$",
+          "description": "`ev_` for forensic evidence, `sc_` for screenshot evidence. The prefixes keep two independently-built record sets from colliding when they are merged for disagreement analysis."
+        },
+        "claim": { "type": "string", "minLength": 1 },
+        "value": {
+          "type": ["string", "number", "array", "boolean", "null"],
+          "description": "Booleans are legitimate: a qualitative observation such as \"the hover state differs from the default\" has no other shape."
+        },
+        "normalized": { "type": ["object", "null"] },
+        "status": {
+          "type": "string",
+          "enum": ["measured", "observed", "inferred", "estimated", "unknown"]
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "layout-rect",
+            "computed-style",
+            "css-custom-property",
+            "stylesheet-rule",
+            "media-query",
+            "frequency-inference",
+            "structural-inference",
+            "vision",
+            "user-correction",
+            "runtime-observation",
+            "runtime-correlation"
+          ]
+        },
+        "sourceKind": {
+          "type": "string",
+          "description": "Where the evidence came from. Separate from technique so two sources for one claim can be compared.",
+          "enum": ["dom", "computed-style", "screenshot", "visual-model", "user-correction"]
+        },
+        "technique": {
+          "type": "string",
+          "description": "How the value was derived from that source.",
+          "enum": [
+            "direct-read",
+            "layout-measure",
+            "frequency-inference",
+            "structural-inference",
+            "assertion",
+            "vision-estimate",
+            "pixel-measure",
+            "visual-observation",
+            "pixel-measurement",
+            "OCR",
+            "region-comparison",
+            "runtime-observation",
+            "runtime-correlation"
+          ]
+        },
+        "unit": {
+          "type": ["string", "null"],
+          "description": "Unit of the value where one applies."
+        },
+        "limitations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "What bounds this record's trustworthiness. Mandatory in practice for screenshot evidence, where the medium's limits are the main thing a reader needs."
+        },
+        "contests": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Evidence ids asserting a different value for the same claim. Disagreements are retained, never resolved by deletion."
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "selector": { "type": ["string", "null"] },
+            "element": { "type": ["string", "null"] },
+            "domPath": { "type": ["string", "null"] },
+            "viewport": { "type": ["number", "null"] },
+            "state": { "type": ["string", "null"] },
+            "scheme": { "type": ["string", "null"] },
+            "file": {
+              "type": ["string", "null"],
+              "description": "Source image for screenshot evidence."
+            },
+            "captureDate": { "type": ["string", "null"] },
+            "coordinates": { "type": ["object", "null"] },
+            "region": {
+              "type": ["object", "null"],
+              "description": "Pixel region for screenshot-sourced evidence. A screenshot measurement without a region is inadmissible.",
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string" },
+                "kind": { "type": "string" },
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "width": { "type": "number" },
+                "height": { "type": "number" },
+                "detectionMethod": { "type": "string", "enum": ["explicit", "inferred"] },
+                "viewport": { "type": ["number", "null"] },
+                "image": { "type": ["string", "null"] }
+              }
+            }
+          }
+        },
+        "sampleSize": { "type": "number", "minimum": 0 },
+        "agreement": { "type": "number", "minimum": 0, "maximum": 1 },
+        "raw": { "type": "array" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "supersededBy": { "type": ["string", "null"] },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

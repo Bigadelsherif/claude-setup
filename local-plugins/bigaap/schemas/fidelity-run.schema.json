@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/fidelity-run",
+  "title": "Fidelity Run Manifest",
+  "description": "Declares what a fidelity run compares and under what conditions. `contentMode` is required and has no default: Phase 3.4 measured that a comparative pixel diff between a reference and an independent implementation produces clusters from copy differences alone, so the mode must never be inferred.",
+  "type": "object",
+  "required": ["reference", "target", "viewports", "contentMode", "thresholdsValidated"],
+  "additionalProperties": false,
+  "properties": {
+    "reference": {
+      "type": "object",
+      "required": ["slug", "irHash"],
+      "additionalProperties": true,
+      "properties": {
+        "slug": { "type": "string" },
+        "irHash": { "type": "string" },
+        "lockedAt": { "type": "string" }
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": ["slug"],
+      "additionalProperties": true,
+      "properties": {
+        "slug": { "type": "string" },
+        "startCommand": { "type": ["string", "null"] },
+        "url": { "type": ["string", "null"] }
+      }
+    },
+    "viewports": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["width"],
+        "additionalProperties": true,
+        "properties": {
+          "width": { "type": "number" },
+          "height": { "type": "number" },
+          "devicePixelRatio": { "type": "number" }
+        }
+      }
+    },
+    "contentMode": {
+      "type": "object",
+      "required": ["requested"],
+      "additionalProperties": true,
+      "properties": {
+        "requested": { "type": "string", "enum": ["equivalent-content", "independent-content"] },
+        "declaredEquivalent": { "type": "boolean" },
+        "declaredRelationship": { "type": ["string", "null"] },
+        "maskedSelectors": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": ["default", "hover", "focus", "active", "selected", "expanded", "loading", "empty", "error"]
+          },
+          "selector": { "type": ["string", "null"] },
+          "induction": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "thresholdsValidated": {
+      "const": false,
+      "description": "Structurally pinned to false. A run manifest cannot assert validated tolerances, because none have been measured against a population that did not produce them."
+    },
+    "driver": { "type": ["object", "null"] },
+    "createdAt": { "type": "string" }
+  }
+}

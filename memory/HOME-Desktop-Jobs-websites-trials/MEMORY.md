@@ -1,0 +1,1 @@
+- [Vite stale-cache false failures](feedback_vite_stale_cache.md) — changes that "didn't apply" are usually cache, not code; clear .vite and use a fresh tab

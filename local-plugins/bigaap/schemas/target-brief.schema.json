@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/target-brief",
+  "title": "Target Product Brief",
+  "description": "The one input an adaptation needs that the reference cannot supply: what is being built. Everything here is a TARGET REQUIREMENT and is rendered separately from reference evidence — the two must never appear in one unlabelled instruction. Nothing in this file may be inferred from the reference; if it is not stated here, the prompt does not claim it.",
+  "type": "object",
+  "required": ["product", "productType", "targetPage", "platform", "framework"],
+  "additionalProperties": false,
+
+  "properties": {
+    "$schemaVersion": { "type": "string" },
+
+    "product": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of the product being built. Never the reference's name."
+    },
+    "productType": {
+      "type": "string",
+      "minLength": 1,
+      "description": "e.g. developer tool, marketplace, internal dashboard."
+    },
+    "targetUsers": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Who the target serves. Shapes tone and density, never token values."
+    },
+    "targetPage": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "purpose": { "type": "string" },
+        "route": { "type": "string" }
+      }
+    },
+    "userGoals": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "What a visitor is trying to accomplish."
+    },
+
+    "requiredFunctionality": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "priority": { "type": "string", "enum": ["must", "should", "could"] }
+        }
+      }
+    },
+
+    "contentModel": {
+      "type": "array",
+      "description": "The target's own entities. The reference's content is never reused.",
+      "items": {
+        "type": "object",
+        "required": ["entity"],
+        "additionalProperties": false,
+        "properties": {
+          "entity": { "type": "string", "minLength": 1 },
+          "fields": { "type": "array", "items": { "type": "string" } },
+          "approximateCount": { "type": ["number", "null"] }
+        }
+      }
+    },
+
+    "requiredComponents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "purpose": { "type": "string" },
+          "mapsToReference": {
+            "type": ["string", "null"],
+            "description": "Optional reference component id whose TREATMENT should carry over. Never its content."
+          }
+        }
+      }
+    },
+
+    "brandConstraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "supplied": {
+          "type": "boolean",
+          "description": "Whether the target supplies its own brand. The reference's identity is never reused either way."
+        },
+        "palette": { "type": "array", "items": { "type": "string" } },
+        "typeface": { "type": ["string", "null"] },
+        "voice": { "type": ["string", "null"] },
+        "notes": { "type": "string" }
+      }
+    },
+
+    "assets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "logo": { "type": ["string", "null"] },
+        "imagery": { "type": "string" },
+        "icons": { "type": ["string", "null"] },
+        "placeholderPolicy": {
+          "type": "string",
+          "description": "What to do where the target has no asset yet."
+        }
+      }
+    },
+
+    "platform": {
+      "type": "string",
+      "minLength": 1,
+      "description": "web, ios, android, desktop."
+    },
+    "framework": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "styling": { "type": "string" },
+        "componentLibrary": { "type": ["string", "null"] },
+        "notes": { "type": "string" }
+      }
+    },
+
+    "viewportRequirements": {
+      "type": "array",
+      "items": { "type": "number", "minimum": 1 },
+      "description": "Widths the target must support, which may differ from those captured."
+    },
+
+    "accessibilityRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "conformance": { "type": "string", "description": "e.g. WCAG 2.2 AA" },
+        "additional": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "explicitExclusions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Things the target must NOT carry over, beyond the standing brand-safety rules."
+    },
+
+    "successCriteria": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Target-side acceptance, rendered separately from reference-derived criteria."
+    }
+  }
+}

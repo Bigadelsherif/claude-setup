@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/tap-target-policy",
+  "title": "Tap-target Policy",
+  "description": "The minimum is a project decision, not a universal requirement: WCAG 2.2 AA specifies 24 CSS pixels with named exceptions, Apple HIG 44, Material 48. `policySource` is required so no finding can cite a number without saying where it came from.",
+  "type": "object",
+  "required": ["policyName", "policySource", "minimumTapTargetPx", "severityBelowMinimum"],
+  "additionalProperties": true,
+  "properties": {
+    "policyName": { "type": "string" },
+    "policySource": { "type": "string", "minLength": 10 },
+    "minimumTapTargetPx": { "type": "number", "exclusiveMinimum": 0 },
+    "severityBelowMinimum": { "type": "string", "enum": ["critical", "high", "medium", "low", "informational"] },
+    "exceptions": { "type": "array", "items": { "type": "string" } },
+    "touchOnly": { "type": "boolean" },
+    "keyboardOnly": { "type": "boolean" },
+    "isDefault": { "type": "boolean" },
+    "resolvedFrom": { "type": "string", "enum": ["default", "named", "inline"] }
+  }
+}

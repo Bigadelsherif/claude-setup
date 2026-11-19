@@ -1,0 +1,1 @@
+- [Reda portfolio site](reda-portfolio-site.md) — structure, approved design decisions, remaining placeholders

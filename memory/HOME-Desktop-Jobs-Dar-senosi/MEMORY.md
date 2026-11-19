@@ -1,0 +1,4 @@
+- [Krea model choice](krea-model-choice.md) — only Flux Dev or Qwen without asking; upscalers, video, anything else need an explicit yes
+- [Homepage sections restraint](homepage-sections-restraint.md) — under the hero: normal marketplace layout, luxury through quality, no set-pieces
+- [Cinematic, not cartoon](cinematic-not-cartoon.md) — client visuals: dark violet stage, rim light, faces visible; no flat cartoon art
+- [Client rejected redesign](client-rejected-redesign.md) — 7 Nov 2026: client wants something more interesting; choose a bolder direction from references

@@ -1,0 +1,5 @@
+- [Drafts removed](drafts-removed.md) — old designs deleted 2026-10-26, only the B2B homepage remains; zip backup on the Desktop
+- [Brand direction](brand-direction.md) — Promoscent: hero stays painted, all later sections follow the logo's colours, font and flower art
+- [Project structure](project-structure.md) — reorganised for hand-over 2026-11-02; older memories quote old paths
+- [Audit fixes](audit-fixes.md) — what the audit settled, why phone speed stays low, the fade trap, what still needs the user
+- [Quote form email](quote-form-email.md) — form sends via Resend; the inbox is now shown in the footer (user's call, 2026-11-04); never test against the real inbox

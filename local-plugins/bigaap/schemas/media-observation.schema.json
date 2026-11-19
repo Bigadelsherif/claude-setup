@@ -1,0 +1,192 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/media-observation",
+  "title": "Media Observation Artifact (M3)",
+  "description": "Every media surface a page paints with, and — separately from whether it exists — whether its bytes could be obtained. The two are different questions and this artifact never merges them: an asset the pass declined to fetch, one another origin owns, and one that is genuinely gone all read as 'no asset' if you only record presence, and each demands a different thing from whoever rebuilds the page.",
+  "type": "object",
+  "required": ["$mediaContract", "viewport", "capturedAt", "status", "items"],
+  "additionalProperties": true,
+  "properties": {
+    "$mediaContract": { "type": "string" },
+    "viewport": { "type": "number" },
+    "url": { "type": ["string", "null"] },
+    "pageOrigin": { "type": ["string", "null"] },
+    "devicePixelRatio": { "type": ["number", "null"] },
+    "capturedAt": { "type": "string" },
+    "status": { "enum": ["completed", "failed"] },
+    "reason": {
+      "type": ["string", "null"],
+      "description": "Required in substance when status is `failed`. A pass that could not look must not be indistinguishable from a page with no media."
+    },
+    "counts": { "type": "object", "additionalProperties": { "type": "number" } },
+    "byAvailability": { "type": "object", "additionalProperties": { "type": "number" } },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+    "reducedMotion": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "description": "The run-level outcome of the reduced-motion video visit. `unsupported` and `failed` are distinct from `compared` with no differences: only the last one is a finding about the page.",
+      "properties": {
+        "status": { "enum": ["compared", "unsupported", "not-attempted", "failed"] },
+        "reason": { "type": ["string", "null"] },
+        "videos": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+      }
+    },
+    "items": { "type": "array", "items": { "$ref": "#/$defs/mediaItem" } }
+  },
+
+  "$defs": {
+    "availability": {
+      "enum": [
+        "captured",
+        "present-unreadable",
+        "present-blocked",
+        "present-cross-origin",
+        "present-not-downloaded",
+        "present-generated",
+        "unavailable",
+        "not-established"
+      ],
+      "description": "Eight states, deliberately not three. `captured` means the bytes are under the run directory. `present-unreadable` means the surface exists and its pixels are not legible to a script. `present-blocked` means a policy refused. `present-cross-origin` means another origin owns it and it was not fetched. `present-not-downloaded` means the URL is known and no fetch was attempted. `present-generated` means it exists only at runtime — blob, data URI or MSE — so there is no URL anyone else can resolve. `unavailable` means it was referenced and is genuinely not there. `not-established` means we could not tell."
+    },
+
+    "geometry": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "properties": {
+        "x": { "type": "number" }, "y": { "type": "number" },
+        "width": { "type": "number" }, "height": { "type": "number" }
+      }
+    },
+
+    "videoFrame": {
+      "type": "object",
+      "required": ["fraction", "relativePath"],
+      "additionalProperties": true,
+      "properties": {
+        "fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+        "atSeconds": { "type": ["number", "null"] },
+        "width": { "type": ["number", "null"] },
+        "height": { "type": ["number", "null"] },
+        "relativePath": {
+          "type": "string",
+          "description": "Relative to the viewport directory inside the run. Never an absolute path: the prompt built from this travels to machines that do not have this disk."
+        },
+        "bytes": { "type": ["number", "null"] }
+      }
+    },
+
+    "mediaItem": {
+      "type": "object",
+      "required": ["mediaId", "domPath", "surface", "availability", "availabilityReason", "evidenceGrade"],
+      "additionalProperties": true,
+      "properties": {
+        "mediaId": { "type": "string" },
+        "domPath": { "type": "string" },
+        "surface": {
+          "enum": ["img", "picture", "video", "audio", "canvas", "svg", "iframe", "embed", "css-background", "css-mask", "poster"]
+        },
+        "tag": { "type": ["string", "null"] },
+        "viewport": { "type": ["number", "null"] },
+
+        "sourceUrl": { "type": ["string", "null"] },
+        "resolvedUrl": { "type": ["string", "null"] },
+        "sourceOrigin": { "type": ["string", "null"] },
+        "scheme": { "type": ["string", "null"] },
+        "crossOrigin": { "type": ["boolean", "null"] },
+        "httpStatus": { "type": ["number", "null"] },
+        "mimeType": { "type": ["string", "null"] },
+        "transferSize": { "type": ["number", "null"] },
+
+        "intrinsicWidth": { "type": ["number", "null"] },
+        "intrinsicHeight": { "type": ["number", "null"] },
+        "geometry": { "$ref": "#/$defs/geometry" },
+        "aspectRatio": { "type": ["number", "null"] },
+        "objectFit": { "type": ["string", "null"] },
+        "objectPosition": { "type": ["string", "null"] },
+        "visibility": { "type": ["string", "null"] },
+        "opacity": { "type": ["string", "null"] },
+        "loading": { "type": ["string", "null"] },
+        "decoding": { "type": ["string", "null"] },
+
+        "altPresent": { "type": ["boolean", "null"] },
+        "alt": {
+          "type": ["string", "null"],
+          "description": "The exact attribute value. An empty string is a decision — the author marked the image decorative — and is not the same as the attribute being absent, which `altPresent` distinguishes."
+        },
+
+        "poster": { "type": ["string", "null"] },
+        "posterResolved": { "type": ["string", "null"] },
+        "autoplay": { "type": ["boolean", "null"] },
+        "muted": { "type": ["boolean", "null"] },
+        "loop": { "type": ["boolean", "null"] },
+        "controls": { "type": ["boolean", "null"] },
+        "preload": { "type": ["string", "null"] },
+        "playsInline": { "type": ["boolean", "null"] },
+        "paused": { "type": ["boolean", "null"] },
+        "currentTime": { "type": ["number", "null"] },
+        "duration": { "type": ["number", "null"] },
+        "durationInfinite": { "type": ["boolean", "null"] },
+        "readyState": { "type": ["number", "null"] },
+        "networkState": { "type": ["number", "null"] },
+        "deliveryKind": { "enum": ["direct", "blob-or-mse", "data-uri", "unresolved", null] },
+        "fallbackText": { "type": ["string", "null"] },
+        "frameSampling": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "properties": {
+            "sampled": { "type": "boolean" },
+            "method": { "type": ["string", "null"] },
+            "reason": { "type": ["string", "null"] },
+            "frames": { "type": "array", "items": { "$ref": "#/$defs/videoFrame" } }
+          }
+        },
+
+        "reducedMotion": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "What this video did under a FRESH reduced-motion load, with the emulation applied before navigation. Every field is null when it could not be read: `status: \"unknown\"` with nulls is a different statement from `status: \"measured\"` with `changed: false`, and only the second one says reduced motion made no difference.",
+          "properties": {
+            "mediaId": { "type": ["string", "null"] },
+            "domPath": { "type": ["string", "null"] },
+            "status": { "enum": ["measured", "unknown"] },
+            "reason": { "type": ["string", "null"] },
+            "paused": { "type": ["boolean", "null"] },
+            "muted": { "type": ["boolean", "null"] },
+            "autoplayPrevented": {
+              "type": ["boolean", "null"],
+              "description": "True only when the element declares autoplay AND was paused AND had never advanced past zero. Any weaker test would call a slow-loading video a suppressed one."
+            },
+            "posterShown": {
+              "type": ["boolean", "null"],
+              "description": "Inferred from a poster attribute plus a currentTime that never advanced. There is no direct signal for a poster being painted, so both observable proxies are recorded rather than the conclusion asserted."
+            },
+            "currentTime": { "type": ["number", "null"] },
+            "readyState": { "type": ["number", "null"] },
+            "normal": { "type": ["object", "null"], "additionalProperties": true },
+            "changed": { "type": ["boolean", "null"] }
+          }
+        },
+
+        "isGradient": {
+          "type": ["boolean", "null"],
+          "description": "A CSS gradient is generated by the stylesheet. Reporting one as a missing image sends somebody hunting for a file that never existed."
+        },
+        "urls": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+        "backgroundSize": { "type": ["string", "null"] },
+        "backgroundPosition": { "type": ["string", "null"] },
+        "clipPath": { "type": ["string", "null"] },
+        "filter": { "type": ["string", "null"] },
+        "backdropFilter": { "type": ["string", "null"] },
+
+        "readback": { "type": ["object", "null"], "additionalProperties": true },
+        "contextType": { "type": ["string", "null"] },
+        "webgl": { "type": ["object", "null"], "additionalProperties": true },
+
+        "availability": { "$ref": "#/$defs/availability" },
+        "availabilityReason": { "type": "string" },
+        "evidenceGrade": { "enum": ["measured", "observed", "approximate", "inferred", "unknown", "unsupported"] },
+        "limitations": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

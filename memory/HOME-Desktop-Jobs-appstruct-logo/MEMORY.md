@@ -1,0 +1,2 @@
+- [AppStruct 3D logo lab](appstruct-3d-logo-lab.md) — logo folder is a Next.js + R3F lab for an animated sphere logo; vanlent.dev clone at ../new web
+- [AppStruct brand assets](appstruct-brand-assets.md) — logo is monochrome; brand palette (obsidian/bone/muted gold) lives in ../appstruct_website_system.md; wordmark spelled APPSRTUCT

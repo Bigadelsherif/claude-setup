@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/mode-requirements",
+  "title": "Mode Requirement Matrix",
+  "description": "What each prompt mode cannot function without. Evaluated before projection, so a gap blocks only when the requested output depends on it. There is deliberately no single global confidence threshold — each mode carries its own.",
+  "type": "object",
+  "required": ["analyze", "recreate", "adapt", "extend", "improve"],
+  "additionalProperties": false,
+  "properties": {
+    "analyze": { "$ref": "#/$defs/mode" },
+    "recreate": { "$ref": "#/$defs/mode" },
+    "adapt": { "$ref": "#/$defs/mode" },
+    "extend": { "$ref": "#/$defs/mode" },
+    "improve": { "$ref": "#/$defs/mode" }
+  },
+
+  "$defs": {
+    "mode": {
+      "type": "object",
+      "required": [
+        "label",
+        "intent",
+        "required",
+        "optional",
+        "thresholds",
+        "acceptableSourceKinds",
+        "allowScreenshotEstimates",
+        "requiredArtifacts"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "intent": { "type": "string", "minLength": 1 },
+        "required": { "type": "array", "items": { "$ref": "#/$defs/requirement" } },
+        "optional": { "type": "array", "items": { "$ref": "#/$defs/requirement" } },
+        "thresholds": { "$ref": "#/$defs/thresholds" },
+        "acceptableSourceKinds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": ["dom", "computed-style", "screenshot", "visual-model", "user-correction"]
+          }
+        },
+        "allowScreenshotEstimates": { "type": "boolean" },
+        "requiredArtifacts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Artifacts this mode produces today. Must never list a file the projector cannot write."
+        },
+        "plannedArtifacts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Artifacts this mode will produce once implemented. Kept separate so the matrix does not promise what does not exist."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+
+    "requirement": {
+      "type": "object",
+      "required": ["id", "label", "resolver", "severity", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "description": { "type": "string", "minLength": 1 },
+        "resolver": {
+          "type": "string",
+          "enum": [
+            "claim",
+            "component",
+            "component-variants",
+            "token-group",
+            "color-roles",
+            "viewports",
+            "states",
+            "imagery",
+            "motion",
+            "a11y",
+            "region",
+            "uncontested-critical-claims",
+            "target-brief",
+            "component-scale"
+          ]
+        },
+        "severity": { "type": "string", "enum": ["blocking", "warning"] },
+        "remedy": {
+          "type": "string",
+          "description": "How the gap could be closed. `source` means re-capturing cannot help.",
+          "enum": ["recapture", "source", "none"]
+        },
+
+        "conditionalOn": {
+          "type": "string",
+          "description": "A request flag that promotes this requirement's severity, e.g. includeMotion."
+        },
+        "conditionalSeverity": { "type": "string", "enum": ["blocking", "warning"] },
+
+        "claims": { "type": "array", "items": { "type": "string" } },
+        "match": { "type": "string", "enum": ["all", "any"] },
+        "minStatus": {
+          "type": "string",
+          "enum": ["measured", "observed", "inferred", "estimated", "unknown"]
+        },
+        "minAnatomy": { "type": "number", "minimum": 0 },
+        "minConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minVariants": { "type": "number", "minimum": 0 },
+        "minCount": { "type": "number", "minimum": 0 },
+        "minGroups": { "type": "number", "minimum": 0 },
+        "minDetermined": { "type": "number", "minimum": 0 },
+        "groups": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "thresholds": {
+      "type": "object",
+      "required": ["minConfidence", "minContentReached", "minCoverageFactor"],
+      "additionalProperties": false,
+      "properties": {
+        "minConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minContentReached": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minCoverageFactor": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minComponentConfidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}

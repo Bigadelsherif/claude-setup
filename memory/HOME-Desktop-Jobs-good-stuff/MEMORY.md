@@ -1,0 +1,1 @@
+- [Krea: cheap models, cost before and after](krea-cost-and-cheap-models.md) — preflight quote first, report spend and balance after

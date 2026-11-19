@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/artifact-metadata",
+  "title": "Artifact Metadata",
+  "description": "What a generated artifact says about itself, carried inside the file rather than implied by its path. A prompt copied out of a run directory has no directory left to explain it; this block is what lets a reader — or a tool — still answer what it was generated from, under which mode, from which kind of evidence, and whether that evidence has moved since. Optional fields are written as null rather than omitted: an absent key invites the reading that the writer forgot, where null says the field does not apply here.",
+  "type": "object",
+  "required": [
+    "metadataVersion",
+    "artifactKind",
+    "mode",
+    "workspaceId",
+    "sourceKind",
+    "source",
+    "extractorVersion",
+    "generatedAt",
+    "generatorVersion",
+    "status"
+  ],
+  "additionalProperties": false,
+
+  "properties": {
+    "metadataVersion": {
+      "type": "string",
+      "description": "Shape of this block. Bumped when the metadata contract changes, not when an artifact does."
+    },
+    "artifactKind": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Must be a kind registered in src/artifacts/registry.mjs. An unregistered kind has no rules, which means nothing can check it."
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["analyze", "recreate", "adapt", "extend", "improve"],
+      "description": "The analysis mode that produced this. Checked against the registry's mode matrix."
+    },
+    "projectId": {
+      "type": ["string", "null"],
+      "description": "The project this run belonged to, or null for a run outside one."
+    },
+    "workspaceId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The workspace the run wrote into."
+    },
+    "sourceKind": {
+      "type": "string",
+      "enum": ["url", "screenshots"],
+      "description": "How the reference was captured. Decides which artifacts are admissible at all."
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The reference URL, or the path the screenshots came from."
+    },
+    "irHash": {
+      "type": ["string", "null"],
+      "description": "Content hash of the IR this was projected from. Null only for artifacts with no IR, such as a readiness report."
+    },
+    "evidenceHash": {
+      "type": ["string", "null"],
+      "description": "Content hash of the evidence map."
+    },
+    "configurationHash": {
+      "type": ["string", "null"],
+      "description": "Content hash of the resolved configuration. Changes to policy or stack move this without moving the IR."
+    },
+    "extractorVersion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Which extractor read the page. A mismatch here makes two captures incomparable rather than merely stale."
+    },
+    "driverVersion": {
+      "type": ["string", "null"],
+      "description": "Which browser driver, where one was involved."
+    },
+    "toleranceVersion": {
+      "type": ["string", "null"],
+      "description": "Which tolerance table applied. No tolerance is validated; the version records which unvalidated table was used."
+    },
+    "policyVersion": {
+      "type": ["string", "null"],
+      "description": "Accessibility and tap-target policy in force when this was written."
+    },
+    "generatedAt": {
+      "type": "string",
+      "minLength": 1,
+      "description": "ISO 8601. Excluded from every content hash, so regenerating from an unchanged source is stable."
+    },
+    "generatorVersion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Which version of the tool wrote the file."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["complete", "partial", "blocked", "stale", "superseded"],
+      "description": "Must also be one the registry lists as supported for this artifact kind."
+    },
+    "confidence": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Where one applies. Reported beside coverage and never multiplied into it — a confident reading of a small sample and a hesitant reading of a large one are different situations."
+    },
+    "coverage": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Where one applies. Null means not measured, never zero."
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "helmy/driver-result",
+  "title": "Normalized Driver Result",
+  "description": "Every driver operation returns this envelope, success or failure. A caller reads `status` and `error.code` rather than matching on a vendor's exception type, which is what keeps the fidelity layer independent of the browser.",
+  "type": "object",
+  "required": ["operation", "status", "startedAt", "completedAt", "durationMs", "retryCount"],
+  "additionalProperties": false,
+  "properties": {
+    "operation": { "type": "string" },
+    "status": { "type": "string", "enum": ["ok", "failed", "skipped", "unsupported"] },
+    "value": {},
+    "error": { "type": ["object", "null"] },
+    "errorCode": { "type": ["string", "null"] },
+    "targetUrl": { "type": ["string", "null"] },
+    "viewport": { "type": ["number", "null"] },
+    "state": { "type": ["string", "null"] },
+    "startedAt": { "type": "string" },
+    "completedAt": { "type": "string" },
+    "durationMs": { "type": "number", "minimum": 0 },
+    "retryCount": { "type": "number", "minimum": 0 },
+    "evidenceIds": { "type": "array", "items": { "type": "string" } },
+    "meta": { "type": "object" }
+  }
+}

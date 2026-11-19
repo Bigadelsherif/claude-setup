@@ -1,0 +1,27 @@
+{
+  "name": "helmy",
+  "description": "Private, single-plugin marketplace for the Helmy UI forensics analyzer. Not published anywhere; it exists so the plugin can be installed through the real Claude Code mechanism, which installs from a marketplace rather than from a copied directory.",
+  "owner": {
+    "name": "Helmy"
+  },
+  "plugins": [
+    {
+      "name": "helmy-ui-forensics",
+      "source": "./",
+      "description": "UI/UX forensic analysis: measures a reference interface and projects the evidence into implementation-ready prompts.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Helmy"
+      },
+      "license": "UNLICENSED",
+      "keywords": [
+        "ui",
+        "ux",
+        "design-system",
+        "forensics",
+        "evidence",
+        "prompt-generation"
+      ]
+    }
+  ]
+}

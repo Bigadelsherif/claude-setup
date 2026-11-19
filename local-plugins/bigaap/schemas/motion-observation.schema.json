@@ -1,0 +1,334 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/motion-observation",
+  "title": "Motion Observation Artifact (M2a)",
+  "description": "What a page was seen to DO, and — separately — what caused it. Written by the motion-observation pass, which is independent of the forensic capture: it runs unfrozen, records timestamps, and is compared by classification rather than by bytes. Its contract version is separate so a change here can never invalidate a forensic capture.",
+  "type": "object",
+  "required": ["$motionContract", "capturedAt", "viewport", "observations", "controls", "cleanup"],
+  "additionalProperties": true,
+  "properties": {
+    "$motionContract": {
+      "type": "string",
+      "description": "Independent of CAPTURE_CONTRACT_VERSION. The two version different things."
+    },
+    "capturedAt": { "type": "string" },
+    "viewport": { "type": "number" },
+    "url": { "type": ["string", "null"] },
+    "apparatusRemaining": {
+      "type": ["number", "null"],
+      "description": "Elements still carrying an apparatus marker after cleanup. Asserted rather than assumed; anything but 0 means the page was left instrumented."
+    },
+    "intersectionEntries": { "type": "array" },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+
+    "$motionStage": {
+      "type": "string",
+      "description": "Versions the M2b stage sections below, independently of $motionContract. The sections are additive: a reader that knows only the M2a contract ignores them and loses nothing it previously had, which is why the contract version does not move."
+    },
+    "runId": { "type": ["string", "null"] },
+    "durationMs": { "type": ["number", "null"] },
+
+    "openingSequence": {
+      "type": "object",
+      "description": "The first meaningful visual sequence after load. Its `status` carries the distinction the whole artifact exists for: `none-detected` means the stage looked and saw nothing, `failed` means it could not finish looking, and `not-attempted` means it never ran. None of the three may be read as 'this page has no animation'.",
+      "required": ["status"],
+      "additionalProperties": true,
+      "properties": {
+        "status": { "enum": ["detected", "none-detected", "failed", "not-attempted"] },
+        "reason": {
+          "type": ["string", "null"],
+          "description": "Required in substance whenever status is `failed` or `not-attempted`: a refusal without a stated reason is indistinguishable from a bug."
+        },
+        "windowMs": { "type": ["number", "null"] },
+        "orderEstablished": { "type": "boolean" },
+        "staggerEstablished": { "type": "boolean" },
+        "frames": {
+          "type": "array",
+          "description": "One entry per sample. The cold-load recorder identifies a frame by its scheduled offset, which is exact and meaningful; the older three-frame path labelled them instead. Both shapes are accepted, and neither field is required, because a frame is identified by its position in this array either way.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "frameId": { "type": "string" },
+              "label": { "enum": ["cold-load", "settled", "stable", "reduced", "scroll"] },
+              "offsetMs": { "type": ["number", "null"], "description": "Scheduled milliseconds from document-start." },
+              "atMs": { "type": ["number", "null"], "description": "When the sample was actually taken. It can lag the schedule on a busy main thread, which is why both are kept." },
+              "readyState": { "type": ["string", "null"] },
+              "elementCount": { "type": ["number", "null"] },
+              "changedCount": { "type": ["number", "null"] }
+            }
+          }
+        },
+        "notDetected": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Present only when status is `none-detected`. It records what WAS observable, so that 'nothing moved' can be told apart from 'we could not see movement of this kind'.",
+          "properties": {
+            "observationWindowMs": { "type": ["number", "null"] },
+            "sampleOffsetsMs": { "type": "array", "items": { "type": "number" } },
+            "framesCaptured": { "type": ["number", "null"] },
+            "restoredFromCache": { "type": ["boolean", "null"], "description": "Null means unknown. Reporting false for an unmeasured cache state would assert a fresh load that was never confirmed." },
+            "cacheEvidence": { "type": ["string", "null"] },
+            "contentVisibleAtFirstFrame": { "type": ["number", "null"] },
+            "readyStateAtFirstFrame": { "type": ["string", "null"] },
+            "elementsAtFirstFrame": { "type": ["number", "null"] },
+            "elementRecordTruncated": { "type": ["boolean", "null"] },
+            "observableProperties": { "type": "array", "items": { "type": "string" } },
+            "possibleUnreadableMotion": { "type": "array", "items": { "type": "string" } },
+            "whyAttributionFailed": { "type": ["string", "null"] }
+          }
+        },
+        "participants": { "type": "array", "items": { "$ref": "#/$defs/participant" } }
+      }
+    },
+
+    "coldLoad": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "What the cold load itself was, as opposed to what it saw. A reader who is told no animation was found needs these facts to judge whether that is a finding about the page or about the apparatus.",
+      "properties": {
+        "sampleOffsetsMs": { "type": "array", "items": { "type": "number" } },
+        "framesCaptured": { "type": ["number", "null"] },
+        "restoredFromCache": { "type": ["boolean", "null"] },
+        "cacheEvidence": { "type": ["string", "null"] },
+        "contentVisibleAtFirstFrame": { "type": ["number", "null"] },
+        "elementRecordTruncated": { "type": ["boolean", "null"] },
+        "cacheDisabled": { "type": ["boolean", "null"] },
+        "cacheDisabledNote": { "type": ["string", "null"] },
+        "media": { "type": ["object", "null"], "additionalProperties": true },
+        "navigation": { "type": ["object", "null"], "additionalProperties": true }
+      }
+    },
+
+    "scrollCheckpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["checkpointId", "scrollY"],
+        "properties": {
+          "checkpointId": { "type": "string" },
+          "scrollY": { "type": "number" },
+          "atMs": { "type": ["number", "null"] },
+          "changed": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+
+    "reducedMotion": {
+      "type": "object",
+      "description": "`differs` is null unless a comparison actually ran. Reporting false for a comparison that never happened would assert that reduced motion changes nothing, which is a finding and not a default.",
+      "required": ["status"],
+      "additionalProperties": true,
+      "properties": {
+        "status": { "enum": ["compared", "unsupported", "not-attempted", "failed"] },
+        "differs": { "type": ["boolean", "null"] },
+        "participantsSuppressed": { "type": "array", "items": { "type": "string" } },
+        "note": { "type": ["string", "null"] },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+
+    "observations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/observation" }
+    },
+    "controls": {
+      "type": "array",
+      "description": "Observations taken with no action, over comparable elapsed time. Without one, no causal claim can be licensed.",
+      "items": { "$ref": "#/$defs/observation" }
+    },
+
+    "cleanup": {
+      "type": "object",
+      "description": "What cleanup achieved, not what it attempted. Every key is present and starts null: a step that never ran and a step that ran and failed must be distinguishable.",
+      "required": ["pointerRestored", "focusRestored", "observersDisconnected", "apparatusRemoved", "scrollRestored", "reducedMotionRestored"],
+      "additionalProperties": false,
+      "properties": {
+        "pointerRestored": { "type": ["boolean", "null"] },
+        "focusRestored": { "type": ["boolean", "null"] },
+        "observersDisconnected": { "type": ["number", "boolean", "null"] },
+        "apparatusRemoved": { "type": ["boolean", "null"] },
+        "scrollRestored": { "type": ["boolean", "null"] },
+        "reducedMotionRestored": {
+          "type": ["boolean", "null"],
+          "description": "Null when reduced motion was never changed. Reporting `true` for something untouched would claim a restoration that never happened."
+        }
+      }
+    }
+  },
+
+  "$defs": {
+    "elementState": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "description": "One half of a change. Every property is optional because the sampler records what the page exposed; a property absent here was not read, which is not the same as a property that was read and found empty.",
+      "properties": {
+        "boundingBox": {
+          "type": ["object", "null"],
+          "properties": {
+            "x": { "type": "number" }, "y": { "type": "number" },
+            "width": { "type": "number" }, "height": { "type": "number" }
+          }
+        },
+        "opacity": { "type": ["string", "null"] },
+        "transform": { "type": ["string", "null"] },
+        "visibility": { "type": ["string", "null"] },
+        "display": { "type": ["string", "null"] },
+        "clipPath": { "type": ["string", "null"] },
+        "filter": { "type": ["string", "null"] },
+        "backdropFilter": { "type": ["string", "null"] },
+        "color": { "type": ["string", "null"] },
+        "backgroundColor": { "type": ["string", "null"] }
+      }
+    },
+
+    "participant": {
+      "type": "object",
+      "description": "One element seen to change during the opening sequence. `timingSource` is the field that keeps a screenshot from becoming a measurement: `sampled` means the timing came from timestamped frames, `declared` means it came from a stylesheet and states intent rather than outcome, and `none` means the change was seen and never timed.",
+      "required": ["elementId", "domPath", "initial", "settled", "changedProperties", "timingSource", "evidenceStatus", "trigger"],
+      "additionalProperties": true,
+      "properties": {
+        "elementId": { "type": "string" },
+        "domPath": { "type": "string" },
+        "selectorAdmissible": { "type": ["boolean", "null"] },
+        "order": { "type": ["number", "null"] },
+        "firstSeenMs": { "type": ["number", "null"] },
+        "settledMs": { "type": ["number", "null"] },
+        "initial": { "$ref": "#/$defs/elementState" },
+        "settled": { "$ref": "#/$defs/elementState" },
+        "changedProperties": { "type": "array", "items": { "type": "string" } },
+        "declarations": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "properties": {
+            "animationName": { "type": ["string", "null"] },
+            "duration": { "type": ["string", "null"] },
+            "delay": { "type": ["string", "null"] },
+            "easing": { "type": ["string", "null"] },
+            "iterationCount": { "type": ["string", "null"] },
+            "transitionProperty": { "type": ["string", "null"] },
+            "transitionDuration": { "type": ["string", "null"] },
+            "transitionDelay": { "type": ["string", "null"] },
+            "transitionEasing": { "type": ["string", "null"] }
+          }
+        },
+        "timingSource": {
+          "enum": ["sampled", "sampled-bounds", "declared", "none"],
+          "description": "How the timing was obtained. `sampled-bounds` is the honest answer for frame sampling: the frames say the change had happened by one offset and had not by the previous one, which BOUNDS it without measuring it. `sampled` is reserved for a source that timed the change itself. Collapsing the two would turn a bound into a duration, which is the single easiest way for this artifact to lie."
+        },
+        "firstChangeMs": { "type": ["number", "null"], "description": "The offset of the first sample that saw a difference." },
+        "lastChangeMs": { "type": ["number", "null"], "description": "The offset of the last sample that saw one." },
+        "changeWindowMs": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "earliestStart": { "type": ["number", "null"] },
+            "latestEnd": { "type": ["number", "null"] }
+          }
+        },
+        "approximateDurationMs": { "type": ["number", "null"], "description": "latestEnd minus earliestStart. An upper bound, never an exact duration." },
+        "stillChanging": { "type": ["boolean", "null"] },
+        "staggerMsFromPrevious": { "type": ["number", "null"] },
+        "evidenceStatus": { "enum": ["measured", "observed", "approximate", "inferred", "unknown", "unsupported"] },
+        "trigger": { "$ref": "#/$defs/participantTrigger" }
+      }
+    },
+
+    "participantTrigger": {
+      "type": "object",
+      "description": "Deliberately NOT `triggerClassification`. That record answers 'did this action cause this change', for an action the apparatus performed. This one additionally names WHICH trigger, from a closed vocabulary, and applies to a participant whose action may be page load — something no apparatus performs. Reusing one shape for both would force a null action into a field that means 'the action we took'.",
+      "required": ["classification", "trigger", "controlResult", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "classification": { "type": "string", "enum": ["verified", "unverified"] },
+        "trigger": {
+          "type": ["string", "null"],
+          "enum": [
+            "page-load", "delayed-page-load", "scroll-enter", "scroll-exit",
+            "hover", "focus", "click", "menu-open", "resize", "continuous", "unresolved", null
+          ],
+          "description": "Null whenever the classification is `unverified`. A trigger name and an unverified classification together would let a reader take the name and drop the caveat."
+        },
+        "controlObservationId": { "type": ["string", "null"] },
+        "controlResult": { "type": "string", "enum": ["no-change", "same-change", "different-change", "absent"] },
+        "reason": {
+          "type": ["string", "null"],
+          "description": "Required in substance whenever the classification is `unverified`."
+        }
+      }
+    },
+
+    "observation": {
+      "type": "object",
+      "required": [
+        "observationId", "claimType", "action", "timestampMs", "monotonicMs",
+        "viewport", "beforeState", "afterState", "changedProperties",
+        "measuredProperties", "evidenceIds", "motionEvidenceClass",
+        "unknowns", "controlObservationId", "triggerClassification"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "observationId": { "type": "string", "pattern": "^obs_[0-9]{4,}$" },
+        "claimType": {
+          "type": "string",
+          "enum": ["runtime-observation", "control"],
+          "description": "`runtime-observation` says a state changed. It does NOT say why. A causal statement lives only in triggerClassification."
+        },
+        "action": { "type": ["string", "null"] },
+        "actionParams": { "type": ["object", "null"] },
+        "timestampMs": { "type": "number" },
+        "monotonicMs": { "type": "number", "description": "From a monotonic clock, so elapsed time survives a wall-clock adjustment." },
+        "elapsedMs": { "type": ["number", "null"], "description": "Measured, never assumed." },
+        "viewport": { "type": "number" },
+        "targetSelector": { "type": ["string", "null"] },
+        "targetRole": { "type": ["string", "null"] },
+        "beforeState": { "type": ["object", "null"] },
+        "afterState": { "type": ["object", "null"] },
+        "changedProperties": { "type": "array", "items": { "type": "string" } },
+        "measuredProperties": { "type": "array", "items": { "type": "string" } },
+        "evidenceIds": { "type": "array", "items": { "type": "string" } },
+        "motionEvidenceClass": {
+          "type": "string",
+          "enum": ["declared", "observed-runtime", "inferred", "unverified"],
+          "description": "The motion-specific evidence axis, separate from the five-value STATUS vocabulary, which is unchanged."
+        },
+        "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "unknowns": { "type": "array" },
+        "controlObservationId": {
+          "type": ["string", "null"],
+          "description": "The control that licensed any causal claim on this record. Null means no causal claim can be made from it."
+        },
+        "triggerClassification": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/triggerClassification" }
+          ],
+          "description": "Null on a control record — a control that classified its own trigger would be evidence for itself."
+        }
+      }
+    },
+
+    "triggerClassification": {
+      "type": "object",
+      "description": "A causal claim, or an explicit refusal to make one. `verified` requires a control that saw no change over comparable elapsed time.",
+      "required": ["action", "controlObservationId", "changedProperties", "controlResult", "classification", "reason", "evidenceIds", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "action": { "type": ["string", "null"] },
+        "controlObservationId": { "type": ["string", "null"] },
+        "changedProperties": { "type": "array", "items": { "type": "string" } },
+        "controlResult": {
+          "type": "string",
+          "enum": ["no-change", "same-change", "different-change", "absent"]
+        },
+        "classification": { "type": "string", "enum": ["verified", "unverified"] },
+        "reason": {
+          "type": ["string", "null"],
+          "description": "Required in substance whenever the classification is `unverified`: a refusal with no stated reason is indistinguishable from an oversight."
+        },
+        "evidenceIds": { "type": "array", "items": { "type": "string" } },
+        "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}

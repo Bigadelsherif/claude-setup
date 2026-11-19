@@ -1,0 +1,97 @@
+{
+    "marketplaces":  {
+                         "helmy":  {
+                                       "source":  "directory",
+                                       "local":  "helmy"
+                                   },
+                         "bigaap":  {
+                                        "source":  "directory",
+                                        "local":  "bigaap"
+                                    },
+                         "cli-anything":  {
+                                              "source":  "github",
+                                              "repo":  "HKUDS/CLI-Anything"
+                                          },
+                         "motionsites":  {
+                                             "source":  "git",
+                                             "url":  "https://github.com/Motionsites-AI/claude-skill.git"
+                                         },
+                         "vercel":  {
+                                        "source":  "github",
+                                        "repo":  "vercel/vercel-plugin"
+                                    },
+                         "claude-plugins-official":  {
+                                                         "source":  "github",
+                                                         "repo":  "anthropics/claude-plugins-official"
+                                                     }
+                     },
+    "enabledPlugins":  {
+                           "vercel-plugin@vercel":  true,
+                           "bigaap-ui-forensics@bigaap":  true,
+                           "cli-anything@cli-anything":  true,
+                           "motionsites-web-builder@motionsites":  true
+                       },
+    "mcpServers":  {
+                       "imagekit_devtools":  {
+                                                 "type":  "http",
+                                                 "url":  "https://devtools-mcp.imagekit.io/mcp"
+                                             },
+                       "imagekit_api":  {
+                                            "type":  "http",
+                                            "url":  "https://api-mcp.imagekit.io/mcp"
+                                        },
+                       "appwrite":  {
+                                        "type":  "http",
+                                        "url":  "https://mcp.appwrite.io/"
+                                    },
+                       "supabase":  {
+                                        "type":  "http",
+                                        "url":  "https://mcp.supabase.com/mcp?read_only=true"
+                                    },
+                       "radix-ui":  {
+                                        "type":  "stdio",
+                                        "command":  "npx",
+                                        "args":  [
+                                                     "-y",
+                                                     "@gianpieropuleo/radix-mcp-server@latest"
+                                                 ],
+                                        "env":  {
+
+                                                }
+                                    },
+                       "ark-ui":  {
+                                      "type":  "stdio",
+                                      "command":  "npx",
+                                      "args":  [
+                                                   "-y",
+                                                   "@ark-ui/mcp"
+                                               ],
+                                      "env":  {
+
+                                              }
+                                  },
+                       "shadcn":  {
+                                      "type":  "stdio",
+                                      "command":  "npx",
+                                      "args":  [
+                                                   "-y",
+                                                   "shadcn@latest",
+                                                   "mcp"
+                                               ],
+                                      "env":  {
+
+                                              }
+                                  },
+                       "blender":  {
+                                       "type":  "stdio",
+                                       "command":  "uvx",
+                                       "args":  [
+                                                    "mcp-for-blender"
+                                                ],
+                                       "env":  {
+
+                                               }
+                                   }
+                   },
+    "theme":  "dark"
+}

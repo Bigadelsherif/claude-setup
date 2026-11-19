@@ -1,0 +1,19 @@
+{
+  "name": "bigaap-ui-forensics",
+  "version": "0.1.0",
+  "description": "UI/UX forensic analysis: measures a reference interface and projects the evidence into implementation-ready prompts.",
+  "author": {
+    "name": "Bigaap"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "ui",
+    "ux",
+    "design-system",
+    "forensics",
+    "evidence",
+    "prompt-generation"
+  ],
+  "commands": "./commands",
+  "skills": "./skills"
+}

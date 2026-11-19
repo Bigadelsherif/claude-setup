@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "helmy/recovery-policy",
+  "title": "Recovery Policy",
+  "description": "One entry per named failure. `viewportRemainsBlocked` decides whether a viewport's results survive; `otherViewportsMayContinue` decides whether the run does. A retry never overwrites the failed attempt.",
+  "type": "object",
+  "required": ["failure", "retryable", "maxRetries", "backoffMs", "newContextRequired", "viewportRemainsBlocked", "otherViewportsMayContinue", "artifact", "recommendation"],
+  "additionalProperties": false,
+  "properties": {
+    "failure": { "type": "string" },
+    "retryable": { "type": "boolean" },
+    "maxRetries": { "type": "number", "minimum": 0 },
+    "backoffMs": { "type": "array", "items": { "type": "number" } },
+    "newContextRequired": { "type": "boolean" },
+    "viewportRemainsBlocked": { "type": "boolean" },
+    "otherViewportsMayContinue": { "type": "boolean" },
+    "artifact": { "type": "string" },
+    "recommendation": { "type": "string", "minLength": 20 }
+  }
+}

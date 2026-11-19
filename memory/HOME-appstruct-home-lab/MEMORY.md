@@ -1,0 +1,4 @@
+- [All samples on one page](samples-all-on-one-page.md) — show every idea at once, each self-playing; never one demo with toggles
+- [Owner choices over audits](owner-choices-over-audits.md) — splash plays fully with no scroll; wheel 0.6; keep them when audits flag them
+- [Grey, white and black](palette-grey-white-black.md) — no yellow/cream tints in our own graphics; real screenshots keep their colours
+- [Performance work closed](perf-work-closed.md) — owner stopped at 'good enough' 2026-10-22; 1.25x glass on weak GPUs and Projects title blur declined

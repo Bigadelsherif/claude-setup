@@ -1,0 +1,1463 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/ir",
+  "title": "Intermediate Representation",
+  "type": "object",
+  "required": [
+    "$schemaVersion",
+    "meta",
+    "coverage",
+    "safety",
+    "tokens",
+    "scales",
+    "layout",
+    "components",
+    "confidence",
+    "unknowns"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schemaVersion": {
+      "type": "string"
+    },
+    "coverage": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Coverage assessment. Required because a claim's provenance is meaningless without knowing what region it came from."
+    },
+    "verification": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "safety": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "The safety verdict. An IR without one is not considered complete."
+    },
+    "modeEvaluation": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "What the requested output required, what was available, and which gap decided the verdict."
+    },
+    "screenshot": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Present only for screenshot-only analyses. Carries images, regions, rejections and whether scale and viewport are known."
+    },
+    "disagreements": {
+      "type": "array",
+      "description": "Cross-source comparisons. Both values are retained; neither is deleted."
+    },
+    "contestedClaims": {
+      "type": "array",
+      "description": "Claims where sources disagree beyond tolerance. A contested critical claim blocks recreate and extend.",
+      "items": {
+        "type": "object",
+        "required": [
+          "claim",
+          "critical",
+          "candidates"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "claim": {
+            "type": "string"
+          },
+          "critical": {
+            "type": "boolean"
+          },
+          "disagreementId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolutionStatus": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "candidates": {
+            "type": "array"
+          }
+        }
+      }
+    },
+    "sourceKinds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "multiSource": {
+      "type": "boolean"
+    },
+    "componentCandidates": {
+      "type": "array"
+    },
+    "repeatedStructures": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Element groups that repeat, reported as themselves. **Not components**: these carry repetition, region and geometry, never a surface, and they are deliberately kept out of `components` so the component-anatomy gate cannot read them. Optional and absent for captures with no repeat detection. Nested duplicates are collapsed \u2014 within one instance count only members not contained by another member are kept \u2014 and the accepted component and bare tag signatures are excluded.",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "scope"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "signature",
+              "instances",
+              "region"
+            ],
+            "properties": {
+              "signature": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The reference's own selector signature. No semantic role is assigned."
+              },
+              "instances": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "region": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "inPrimaryRegion": {
+                "type": "boolean"
+              },
+              "sample": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "width": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "height": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              "paintedMembers": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "description": "Members observed to paint. Recorded so the absence of a surface claim is visible; it is not itself a surface claim."
+              },
+              "selectorStability": {
+                "type": "string",
+                "enum": [
+                  "measured-stable",
+                  "generated-names",
+                  "not-measured"
+                ],
+                "description": "`not-measured` where class-name stability was never assessed \u2014 the usual case."
+              }
+            }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "description": "What the list covers. `serialised` and `inPrimaryRegion` count DIFFERENT SETS and must never be divided into one another: a nav group can be serialised without being in the primary region.",
+          "additionalProperties": false,
+          "required": [
+            "serialised",
+            "capped",
+            "walkTruncated",
+            "listed"
+          ],
+          "properties": {
+            "serialised": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cap": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "capped": {
+              "type": "boolean"
+            },
+            "inPrimaryRegion": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "walkTruncated": {
+              "type": "boolean"
+            },
+            "listed": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "componentDiagnostics": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Why the primary component is the one it is, and what the alternatives look like. **Explanatory only** \u2014 selection, gates, coverage, confidence and prompt generation must not read it. Where a lower-ranked candidate resolves more surface properties, it is reported with a `structuralNote` saying why it was not chosen; on measured captures those candidates are page sections or text chips, the two failures def_0008 and def_0053 exist to prevent. Optional and absent where no repeat group was detected. See docs/COMPONENT-SELECTION.md.",
+      "additionalProperties": false,
+      "required": [
+        "candidates",
+        "probeCoverage",
+        "thresholds",
+        "limits"
+      ],
+      "properties": {
+        "selected": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "rank": {
+              "type": "integer"
+            },
+            "signature": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "stableSelector": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "resolvedProperties": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "confidence": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "wouldSatisfyAnatomy": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "wouldSatisfyBasis": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "structuralNote": {
+              "type": "string",
+              "enum": [
+                "section-scale",
+                "chip-scale",
+                "within-component-scale",
+                "scale-unknown"
+              ]
+            }
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rank",
+              "selected",
+              "signature",
+              "resolvedFrom",
+              "resolvedProperties",
+              "wouldSatisfyAnatomy",
+              "structuralNote"
+            ],
+            "properties": {
+              "rank": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "selected": {
+                "type": "boolean"
+              },
+              "signature": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "stableSelector": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "instances": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "area": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "sample": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "width": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "height": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              "region": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "inPrimaryRegion": {
+                "type": "boolean"
+              },
+              "paintedMembers": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "resolvedFrom": {
+                "type": "string",
+                "enum": [
+                  "probe",
+                  "not-probed"
+                ]
+              },
+              "resolvedProperties": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "description": "Surface properties the probe resolved. `null` means no probe row existed \u2014 never 0, which would assert a measured absence."
+              },
+              "confidence": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Only the selected component carries one; the evidence builder runs over no other candidate."
+              },
+              "wouldSatisfyAnatomy": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "Tri-state. `false` is a finding; `null` means unprobed or no confidence computed. Explanatory: nothing may select on it."
+              },
+              "wouldSatisfyBasis": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "structuralNote": {
+                "type": "string",
+                "enum": [
+                  "section-scale",
+                  "chip-scale",
+                  "within-component-scale",
+                  "scale-unknown"
+                ],
+                "description": "Geometry band against the viewport, never derived from names."
+              }
+            }
+          },
+          "description": "Score order descending, signature breaking ties, so identical input yields identical output."
+        },
+        "probeCoverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidates",
+            "probed",
+            "probeRan"
+          ],
+          "properties": {
+            "candidates": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "probed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unprobed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "probeRan": {
+              "type": "boolean"
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minProperties": {
+              "type": "integer"
+            },
+            "minConfidence": {
+              "type": "number"
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "explanatoryOnly": {
+              "type": "boolean"
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "required": [
+        "slug",
+        "source",
+        "capturedAt",
+        "viewports",
+        "tier",
+        "extractorVersion"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "source": {
+          "type": "object",
+          "required": [
+            "kind",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "url",
+                "screenshots",
+                "figma"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        "capturedAt": {
+          "type": "string"
+        },
+        "viewports": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "tier": {
+          "type": "string"
+        },
+        "extractorVersion": {
+          "type": "string"
+        },
+        "coverage": {
+          "type": "object"
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "required": [
+        "color",
+        "typography",
+        "spacing",
+        "radius",
+        "elevation",
+        "border",
+        "motion"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "type": "object"
+        },
+        "typography": {
+          "type": "object"
+        },
+        "spacing": {
+          "type": "object"
+        },
+        "radius": {
+          "type": "object"
+        },
+        "elevation": {
+          "type": "object"
+        },
+        "border": {
+          "type": "object"
+        },
+        "motion": {
+          "type": "object"
+        }
+      }
+    },
+    "scales": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "spacingBaseUnit": {
+          "$ref": "#/$defs/claim"
+        },
+        "spacingRamp": {
+          "$ref": "#/$defs/claim"
+        },
+        "spacingObserved": {
+          "$ref": "#/$defs/claim"
+        },
+        "typeRamp": {
+          "$ref": "#/$defs/claim"
+        },
+        "radiusLadder": {
+          "$ref": "#/$defs/claim"
+        }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "containers": {
+          "type": "array"
+        },
+        "grids": {
+          "type": "array"
+        },
+        "breakpoints": {
+          "$ref": "#/$defs/claim"
+        },
+        "breakpointDetail": {
+          "$ref": "#/$defs/claim"
+        },
+        "zLayers": {
+          "$ref": "#/$defs/claim"
+        }
+      }
+    },
+    "responsive": {
+      "type": "object"
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/component"
+      }
+    },
+    "motion": {
+      "type": "object",
+      "description": "Motion as the stylesheets DECLARE it. Nothing here records what triggers an animation, whether elements form a staggered sequence, or whether anything is scroll-linked: none of those is visible in computed style, and each needs multi-sample capture to earn. A declaration is not a behaviour.",
+      "additionalProperties": false,
+      "properties": {
+        "transitions": {
+          "type": "array",
+          "description": "Page-level transition tokens, aggregated across elements.",
+          "items": {
+            "type": "object"
+          }
+        },
+        "keyframes": {
+          "$ref": "#/$defs/claim",
+          "description": "The names of every @keyframes rule that was reachable."
+        },
+        "keyframeDetail": {
+          "type": "array",
+          "description": "Keyframe rule bodies, where the stylesheet was same-origin and readable. A name tells a builder the animation exists; the steps are what make it reproducible.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "name": {
+                "$ref": "#/$defs/claim"
+              },
+              "steps": {
+                "$ref": "#/$defs/claim"
+              },
+              "declarations": {
+                "$ref": "#/$defs/claim"
+              }
+            }
+          }
+        },
+        "keyframeDetailSummary": {
+          "$ref": "#/$defs/claim"
+        },
+        "declared": {
+          "type": "array",
+          "description": "One entry per element declaring an animation, a transition, or a compositing property. Capped by the extractor; `declaredCount` reports the true total.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "region": {
+                "$ref": "#/$defs/claim"
+              },
+              "animationName": {
+                "$ref": "#/$defs/claim"
+              },
+              "animationDuration": {
+                "$ref": "#/$defs/claim"
+              },
+              "animationDelay": {
+                "$ref": "#/$defs/claim"
+              },
+              "animationTimingFunction": {
+                "$ref": "#/$defs/claim"
+              },
+              "animationIterationCount": {
+                "$ref": "#/$defs/claim"
+              },
+              "animationFillMode": {
+                "$ref": "#/$defs/claim"
+              },
+              "animationDirection": {
+                "$ref": "#/$defs/claim"
+              },
+              "animationPlayState": {
+                "$ref": "#/$defs/claim"
+              },
+              "transitionProperty": {
+                "$ref": "#/$defs/claim"
+              },
+              "transitionDuration": {
+                "$ref": "#/$defs/claim"
+              },
+              "transitionDelay": {
+                "$ref": "#/$defs/claim"
+              },
+              "transitionTimingFunction": {
+                "$ref": "#/$defs/claim"
+              },
+              "transform": {
+                "$ref": "#/$defs/claim"
+              },
+              "willChange": {
+                "$ref": "#/$defs/claim"
+              },
+              "filter": {
+                "$ref": "#/$defs/claim"
+              },
+              "backdropFilter": {
+                "$ref": "#/$defs/claim"
+              }
+            }
+          }
+        },
+        "declaredCount": {
+          "$ref": "#/$defs/claim"
+        },
+        "runningAtCapture": {
+          "$ref": "#/$defs/claim",
+          "description": "How many animations were in flight at the instant of capture. A time-dependent sample \u2014 one that finished earlier is invisible, and one that is running says nothing about what started it."
+        },
+        "observed": {
+          "type": "object",
+          "description": "Observed runtime motion from the M2a browser pass. Structurally separate from everything above, which is declared. `triggers` is two arrays rather than one list with a status field: a consumer iterating one list and forgetting to read `classification` would render an unverified causal claim as fact.",
+          "additionalProperties": false,
+          "required": [
+            "artifact",
+            "runtime",
+            "triggers",
+            "controls"
+          ],
+          "properties": {
+            "artifact": {
+              "type": "object",
+              "description": "Always present, so the IR can say WHY there is no observed motion. Absent, refused and malformed are three different statements.",
+              "additionalProperties": false,
+              "required": [
+                "present",
+                "state",
+                "valid",
+                "reason"
+              ],
+              "properties": {
+                "present": {
+                  "type": "boolean"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "absent",
+                    "valid",
+                    "invalid",
+                    "unsupported-version",
+                    "refused-source"
+                  ]
+                },
+                "contractVersion": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "valid": {
+                  "type": "boolean"
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "runtime": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "triggers": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "verified",
+                "unverified"
+              ],
+              "properties": {
+                "verified": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "unverified": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            },
+            "controls": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "cleanup": {
+              "type": "object"
+            },
+            "limitations": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "description": "Media elements the capture measured. Separate from `brand`, which is the policy on what must not be reproduced: this is what was found, that is what may be emitted. Each fact is a claim carrying its own status and evidence ids, so a rendered box read from layout geometry and an intrinsic size the element never exposed stay distinguishable.",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "items"
+      ],
+      "properties": {
+        "count": {
+          "$ref": "#/$defs/claim",
+          "description": "How many media elements were found. Unknown when none was \u2014 an absence the capture observed, not a gap in it."
+        },
+        "items": {
+          "type": "array",
+          "description": "One entry per media element, in capture order.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "tag": {
+                "$ref": "#/$defs/claim"
+              },
+              "region": {
+                "$ref": "#/$defs/claim"
+              },
+              "renderedWidth": {
+                "$ref": "#/$defs/claim"
+              },
+              "renderedHeight": {
+                "$ref": "#/$defs/claim"
+              },
+              "intrinsicWidth": {
+                "$ref": "#/$defs/claim"
+              },
+              "intrinsicHeight": {
+                "$ref": "#/$defs/claim"
+              },
+              "aspectRatio": {
+                "$ref": "#/$defs/claim"
+              },
+              "objectFit": {
+                "$ref": "#/$defs/claim"
+              },
+              "hasAlt": {
+                "$ref": "#/$defs/claim",
+                "description": "Whether an alt attribute is present. The alt TEXT is never recorded \u2014 it is the reference's own content."
+              }
+            }
+          }
+        }
+      }
+    },
+    "ux": {
+      "type": "object"
+    },
+    "structure": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Page structure read from evidence the capture already held: which landmark regions sampled nodes resolved into, whether the content region was declared or inferred, and the order of sections where `nth-of-type` establishes one. Optional, and absent for screenshot-only captures, which have no DOM to read it from. Presence is never derived from `coverage.regionAvailable`: the extractor buckets nodes with `else if` and `inPrimary` wins first, so on a page with an inferred primary region the header and footer counts are zero by construction rather than by observation.",
+      "additionalProperties": false,
+      "required": [
+        "landmarks",
+        "contentRegion",
+        "outline",
+        "limits"
+      ],
+      "properties": {
+        "landmarks": {
+          "type": "array",
+          "description": "One entry per landmark region the extractor can attribute a node to.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "region",
+              "state",
+              "sampled",
+              "basis"
+            ],
+            "properties": {
+              "region": {
+                "type": "string",
+                "enum": [
+                  "header",
+                  "nav",
+                  "main",
+                  "footer",
+                  "aside"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "observed",
+                  "inferred",
+                  "absent",
+                  "uncaptured",
+                  "unmeasurable"
+                ]
+              },
+              "sampled": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "description": "Sampled nodes that resolved into this region."
+              },
+              "basis": {
+                "type": "string",
+                "description": "What licenses the state. `absent` for `main` cites the document-wide query; every other `absent` cites a completed walk."
+              }
+            }
+          }
+        },
+        "contentRegion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "selector",
+            "kind",
+            "basis"
+          ],
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "observed",
+                "inferred",
+                "absent",
+                "uncaptured",
+                "unmeasurable"
+              ]
+            },
+            "selector": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "explicit-main",
+                "inferred-largest-block",
+                "fallback-body",
+                null
+              ]
+            },
+            "visibleDescendants": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "basis": {
+              "type": "string"
+            }
+          }
+        },
+        "outline": {
+          "type": "object",
+          "description": "An ordered section list, or a stated reason there is none. Order comes from `nth-of-type` among same-tag siblings beneath a landmark element; it is never asserted between landmarks, whose relative order a DOM path does not record.",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "sections"
+          ],
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "observed",
+                "inferred",
+                "absent",
+                "uncaptured",
+                "unmeasurable"
+              ]
+            },
+            "root": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "DOM path of the element the sections sit in."
+            },
+            "rootRegion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rootTag": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "partial": {
+              "type": "boolean",
+              "description": "True when the walk was truncated. The order found is real; the list is not known to be complete."
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Why no outline was derived. Null when one was."
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "order",
+                  "tag",
+                  "contains"
+                ],
+                "properties": {
+                  "order": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "contains": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Selectors observed inside the section. Quoted from the reference; no purpose is claimed for any of them."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "truncated"
+          ],
+          "properties": {
+            "truncated": {
+              "type": "boolean"
+            },
+            "nodeCap": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "headerRoleAmbiguous": {
+              "type": "boolean",
+              "description": "`regionOf` reports both a sectioning `<header>` and a `role=banner` as \"header\". An observed header element is therefore not evidence of a site-wide banner."
+            },
+            "hiddenDominant": {
+              "type": "boolean",
+              "description": "True when hidden or collapsed subtrees outnumbered the visible nodes. A non-main region with no sampled nodes is then `uncaptured` rather than `absent`: the walk finished, which is not the same as having looked (def_0051)."
+            },
+            "hiddenNodesSkipped": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "nodesVisible": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "a11y": {
+      "type": "object"
+    },
+    "brand": {
+      "type": "object"
+    },
+    "confidence": {
+      "type": "object",
+      "required": [
+        "overall"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "byCategory": {
+          "type": "object"
+        },
+        "provenance": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "coverageFactor": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "overall": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "claim",
+          "reason"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "claim": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "required": [
+        "value",
+        "status",
+        "confidence",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "array",
+            "boolean",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "measured",
+            "observed",
+            "inferred",
+            "estimated",
+            "unknown"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why this claim is empty. Present only on unknown claims \u2014 a gap that states its cause is honest; a bare null is not."
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "required": [
+        "id",
+        "role",
+        "selectors",
+        "anatomy",
+        "states",
+        "confidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "selectors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "semanticUnit": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "What the repeated thing IS, with its own evidence and confidence. Held apart from the evidence that it is one thing, from what it paints, and from the box it sits in."
+        },
+        "identity": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The evidence that these instances are one component. `assessable: false` means the capture predates coherence instrumentation and the question could not be asked \u2014 which is not the same as failing it."
+        },
+        "surface": {
+          "description": "What the component paints. EXPLICITLY null when nothing does \u2014 an omitted field would read as `not measured`, whereas null means `measured, and there is none`.",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "surfaceClassification": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "painted-background",
+            "painted-border",
+            "painted-shadow",
+            "image-painted",
+            "text-only",
+            "layout-only",
+            "inherited-surface",
+            "descendant-painted",
+            "none",
+            "unknown",
+            null
+          ]
+        },
+        "surfaceObserved": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether the surface question was actually answered. `surface: null` with this false means unknown; with this true it means there is none."
+        },
+        "wrapper": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The layout container the instances sit in. Not the component: it occurs once, they occur many times."
+        },
+        "paintedDescendant": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The node inside the component that paints, when the component itself does not. An implementer must put the background on this element, not on the component."
+        },
+        "nonSurfaceProperties": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object"
+          },
+          "description": "Reliable properties evidenced without reference to paint. These are what the anatomy guard counts."
+        },
+        "anatomyVerdict": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Whether anatomy is sufficient to rebuild, and why. With no surface, fewer than three reliable non-surface properties blocks recreate."
+        },
+        "repetition": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "evidenceIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "stableSelector": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Structural selector emitted when the class-based selector is unusable. A hashed class is true today and meaningless after the next deploy; a utility class survives deploys but names presentation rather than identity."
+        },
+        "selectorUnusableReason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "build-generated",
+            "presentational",
+            null
+          ],
+          "description": "Why the class selector was rejected. Stated rather than hedged: the reason is known where the selector is emitted."
+        },
+        "instanceCount": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "box": {
+          "type": "object"
+        },
+        "geometry": {
+          "description": "Rendered box of the element this component was modelled from, promoted from the repeat group the extractor measured. Read by the `primary-component-admissible` requirement so a gate can judge structural scale without reading the read-only diagnostics field. Null when no repeat group matched unambiguously — absent, never zero.",
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["area", "width", "height", "viewportWidth", "status"],
+          "properties": {
+            "area": { "type": ["number", "null"] },
+            "width": { "type": ["number", "null"] },
+            "height": { "type": ["number", "null"] },
+            "viewportWidth": { "type": ["number", "null"] },
+            "status": { "type": "string" }
+          }
+        },
+        "anatomy": {
+          "type": "array"
+        },
+        "variants": {
+          "type": "array"
+        },
+        "states": {
+          "type": "object"
+        },
+        "responsive": {
+          "type": "object"
+        },
+        "motion": {
+          "type": "object"
+        },
+        "a11y": {
+          "type": "object"
+        },
+        "tokensUsed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  }
+}

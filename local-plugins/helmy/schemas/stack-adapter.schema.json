@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "helmy/stack-adapter",
+  "title": "Stack adapter configuration",
+  "description": "How the stack-agnostic IR is rendered into implementation prompts. This describes OUTPUT, never measurement: the analysis core imports no stack adapter, and an audit invariant keeps it that way. Naming an adapter that is not implemented is recorded as `unsupported` rather than silently substituted, because a prompt written for the wrong stack is worse than no prompt.",
+  "type": "object",
+  "required": ["schemaVersion", "adapter", "status"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "adapter": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["valid", "unsupported"],
+      "description": "`next-tailwind` is the only implemented adapter. Any other name is `unsupported` — recorded, refused, and never quietly replaced with the one that exists."
+    },
+    "framework": { "type": "string" },
+    "router": { "type": "string" },
+    "language": { "type": "string" },
+    "styling": { "type": "string" },
+    "tokenSource": {
+      "type": "string",
+      "description": "Where design tokens live in the generated code. CSS custom properties by default, so tokens survive a change of styling approach."
+    },
+    "motion": {
+      "type": "string",
+      "enum": ["native-css", "gsap", "none"],
+      "description": "Motion is emitted only where the evidence supports a motion claim. An unmeasured transition is never invented to fill the section."
+    },
+    "motionAlternatives": { "type": "array", "items": { "type": "string" } },
+    "$kind": { "type": "string", "enum": ["project-requirement", "tool-default", "unsupported-request"] },
+    "$note": { "type": "string" }
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "helmy/motion-observation",
+  "title": "Motion Observation Artifact (M2a)",
+  "description": "What a page was seen to DO, and — separately — what caused it. Written by the motion-observation pass, which is independent of the forensic capture: it runs unfrozen, records timestamps, and is compared by classification rather than by bytes. Its contract version is separate so a change here can never invalidate a forensic capture.",
+  "type": "object",
+  "required": ["$motionContract", "capturedAt", "viewport", "observations", "controls", "cleanup"],
+  "additionalProperties": true,
+  "properties": {
+    "$motionContract": {
+      "type": "string",
+      "description": "Independent of CAPTURE_CONTRACT_VERSION. The two version different things."
+    },
+    "capturedAt": { "type": "string" },
+    "viewport": { "type": "number" },
+    "url": { "type": ["string", "null"] },
+    "apparatusRemaining": {
+      "type": ["number", "null"],
+      "description": "Elements still carrying an apparatus marker after cleanup. Asserted rather than assumed; anything but 0 means the page was left instrumented."
+    },
+    "intersectionEntries": { "type": "array" },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+
+    "observations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/observation" }
+    },
+    "controls": {
+      "type": "array",
+      "description": "Observations taken with no action, over comparable elapsed time. Without one, no causal claim can be licensed.",
+      "items": { "$ref": "#/$defs/observation" }
+    },
+
+    "cleanup": {
+      "type": "object",
+      "description": "What cleanup achieved, not what it attempted. Every key is present and starts null: a step that never ran and a step that ran and failed must be distinguishable.",
+      "required": ["pointerRestored", "focusRestored", "observersDisconnected", "apparatusRemoved", "scrollRestored", "reducedMotionRestored"],
+      "additionalProperties": false,
+      "properties": {
+        "pointerRestored": { "type": ["boolean", "null"] },
+        "focusRestored": { "type": ["boolean", "null"] },
+        "observersDisconnected": { "type": ["number", "boolean", "null"] },
+        "apparatusRemoved": { "type": ["boolean", "null"] },
+        "scrollRestored": { "type": ["boolean", "null"] },
+        "reducedMotionRestored": {
+          "type": ["boolean", "null"],
+          "description": "Null when reduced motion was never changed. Reporting `true` for something untouched would claim a restoration that never happened."
+        }
+      }
+    }
+  },
+
+  "$defs": {
+    "observation": {
+      "type": "object",
+      "required": [
+        "observationId", "claimType", "action", "timestampMs", "monotonicMs",
+        "viewport", "beforeState", "afterState", "changedProperties",
+        "measuredProperties", "evidenceIds", "motionEvidenceClass",
+        "unknowns", "controlObservationId", "triggerClassification"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "observationId": { "type": "string", "pattern": "^obs_[0-9]{4,}$" },
+        "claimType": {
+          "type": "string",
+          "enum": ["runtime-observation", "control"],
+          "description": "`runtime-observation` says a state changed. It does NOT say why. A causal statement lives only in triggerClassification."
+        },
+        "action": { "type": ["string", "null"] },
+        "actionParams": { "type": ["object", "null"] },
+        "timestampMs": { "type": "number" },
+        "monotonicMs": { "type": "number", "description": "From a monotonic clock, so elapsed time survives a wall-clock adjustment." },
+        "elapsedMs": { "type": ["number", "null"], "description": "Measured, never assumed." },
+        "viewport": { "type": "number" },
+        "targetSelector": { "type": ["string", "null"] },
+        "targetRole": { "type": ["string", "null"] },
+        "beforeState": { "type": ["object", "null"] },
+        "afterState": { "type": ["object", "null"] },
+        "changedProperties": { "type": "array", "items": { "type": "string" } },
+        "measuredProperties": { "type": "array", "items": { "type": "string" } },
+        "evidenceIds": { "type": "array", "items": { "type": "string" } },
+        "motionEvidenceClass": {
+          "type": "string",
+          "enum": ["declared", "observed-runtime", "inferred", "unverified"],
+          "description": "The motion-specific evidence axis, separate from the five-value STATUS vocabulary, which is unchanged."
+        },
+        "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "unknowns": { "type": "array" },
+        "controlObservationId": {
+          "type": ["string", "null"],
+          "description": "The control that licensed any causal claim on this record. Null means no causal claim can be made from it."
+        },
+        "triggerClassification": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/triggerClassification" }
+          ],
+          "description": "Null on a control record — a control that classified its own trigger would be evidence for itself."
+        }
+      }
+    },
+
+    "triggerClassification": {
+      "type": "object",
+      "description": "A causal claim, or an explicit refusal to make one. `verified` requires a control that saw no change over comparable elapsed time.",
+      "required": ["action", "controlObservationId", "changedProperties", "controlResult", "classification", "reason", "evidenceIds", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "action": { "type": ["string", "null"] },
+        "controlObservationId": { "type": ["string", "null"] },
+        "changedProperties": { "type": "array", "items": { "type": "string" } },
+        "controlResult": {
+          "type": "string",
+          "enum": ["no-change", "same-change", "different-change", "absent"]
+        },
+        "classification": { "type": "string", "enum": ["verified", "unverified"] },
+        "reason": {
+          "type": ["string", "null"],
+          "description": "Required in substance whenever the classification is `unverified`: a refusal with no stated reason is indistinguishable from an oversight."
+        },
+        "evidenceIds": { "type": "array", "items": { "type": "string" } },
+        "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}

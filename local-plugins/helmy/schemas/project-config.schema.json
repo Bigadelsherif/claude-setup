@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "helmy/project-config",
+  "title": "Project configuration",
+  "description": "Declared intent for one analysis project. This file states what to analyse and under which policies; it never states what was measured. A value here cannot become a claim about a reference — `$kind: reference-fact` is refused by the loader, because a preference that could masquerade as a fact would be indistinguishable from one downstream.",
+  "type": "object",
+  "required": ["schemaVersion", "helmyVersion", "projectId", "projectName", "createdAt", "updatedAt", "workspaceRoot", "defaults", "configurationStatus"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Bumped when this file's shape changes in a way that breaks reading it. A newer version is `unsupported`, not `invalid` — the file may be perfectly good and simply from a later build."
+    },
+    "helmyVersion": {
+      "type": ["string", "null"],
+      "description": "The tool version that created the project. Read from package.json so it cannot drift from the tool. `null` means the build could not read its own version — a real condition on a damaged install, reported as a blocker by `helmy doctor`. It is null rather than a placeholder version because a placeholder is indistinguishable from a genuine reading, which is exactly how def_0039 stayed invisible."
+    },
+    "projectId": {
+      "type": "string",
+      "pattern": "^prj_[0-9a-f]{16}$",
+      "description": "Stable across moves and renames: derived from name and creation time, never from a path."
+    },
+    "projectName": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "createdAt": { "type": "string" },
+    "updatedAt": { "type": "string" },
+    "workspaceRoot": { "type": "string", "description": "Relative to this file. Analysis workspaces live under it." },
+    "reference": {
+      "description": "The reference to analyse. Null until configured — a project without one is `incomplete`, not broken.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["url", "kind"],
+          "properties": {
+            "url": { "type": "string", "minLength": 1 },
+            "kind": { "type": "string", "enum": ["url", "screenshots", "file"] }
+          }
+        }
+      ]
+    },
+    "defaults": {
+      "type": "object",
+      "required": ["mode", "stackAdapter", "accessibilityPolicy", "fidelityPolicy"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["analyze", "recreate", "adapt", "extend", "improve"] },
+        "stackAdapter": { "type": "string" },
+        "accessibilityPolicy": { "type": "string" },
+        "fidelityPolicy": { "type": "string" }
+      }
+    },
+    "configurationStatus": {
+      "type": "string",
+      "enum": ["absent", "incomplete", "valid", "invalid", "unsupported"],
+      "description": "Five states, deliberately not three. `incomplete` is a project that can be worked on but not yet analysed; `unsupported` is one this build cannot read. Collapsing either into `invalid` would send a user to fix something that is not wrong."
+    },
+    "$kind": {
+      "type": "string",
+      "enum": ["user-preference", "project-requirement", "target-brief-requirement", "tool-default", "unsupported-request"],
+      "description": "`reference-fact` is deliberately absent. Configuration states intent; only evidence states facts."
+    },
+    "$note": { "type": "string" }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/browser-driver",
+  "title": "Browser Driver Identity and Capabilities",
+  "description": "A driver declares what it can do. An operation it cannot perform returns `unsupported` rather than silently doing nothing — a caller who believes animation was frozen will draw timing claims it should not.",
+  "type": "object",
+  "required": ["driverName", "driverVersion", "capabilities"],
+  "additionalProperties": false,
+  "properties": {
+    "driverName": { "type": "string" },
+    "driverVersion": { "type": "string" },
+    "capabilities": { "type": "array", "items": { "type": "string" } },
+    "unsupportedOperations": { "type": "array", "items": { "type": "string" } }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "bigaap-ui-forensics",
+  "version": "0.1.0",
+  "description": "Reverse-engineers a reference interface into measured evidence, then projects that evidence into implementation-ready prompts.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "bigaap": "./bin/bigaap.mjs"
+  },
+  "scripts": {
+    "test": "node tools/run-tests.mjs",
+    "release:package": "node tools/release-package.mjs",
+    "serve:fixture": "node tools/serve-fixture.mjs",
+    "analyze": "node bin/bigaap.mjs analyze",
+    "validate": "node bin/bigaap.mjs validate"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}

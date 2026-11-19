@@ -1,0 +1,1 @@
+- [Live-smoke runtime and process safety](live-smoke-runtime-and-process-safety.md) — live-smoke runs ~48 min; the user's Expo/EAS/Next/Playwright processes share this machine and must never be killed.

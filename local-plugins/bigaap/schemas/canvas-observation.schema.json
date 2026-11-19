@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/canvas-observation",
+  "title": "Canvas Observation Artifact (M3c)",
+  "description": "What each canvas measures, whether its pixels could be obtained, and by which of two very different methods. A canvas is the surface most often replaced by an invented 3D effect when its contents are unknown, so this artifact records the geometry precisely and the contents honestly, and never names a rendering library it did not identify.",
+  "type": "object",
+  "required": ["$canvasContract", "viewport", "capturedAt", "items"],
+  "additionalProperties": true,
+  "properties": {
+    "$canvasContract": { "type": "string" },
+    "viewport": { "type": "number" },
+    "url": { "type": ["string", "null"] },
+    "capturedAt": { "type": "string" },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+    "items": { "type": "array", "items": { "$ref": "#/$defs/canvasItem" } }
+  },
+
+  "$defs": {
+    "canvasItem": {
+      "type": "object",
+      "required": ["mediaId", "domPath", "classification"],
+      "additionalProperties": true,
+      "properties": {
+        "mediaId": { "type": "string" },
+        "domPath": { "type": "string" },
+
+        "attributeWidth": { "type": ["number", "null"], "description": "The `width` attribute — the backing store size, which is not the CSS size." },
+        "attributeHeight": { "type": ["number", "null"] },
+        "cssWidth": { "type": ["string", "null"] },
+        "cssHeight": { "type": ["string", "null"] },
+        "devicePixelWidth": { "type": ["number", "null"] },
+        "devicePixelHeight": { "type": ["number", "null"] },
+        "devicePixelRatio": { "type": ["number", "null"] },
+        "renderedBounds": { "type": ["object", "null"], "additionalProperties": true },
+
+        "readable": {
+          "type": ["boolean", "null"],
+          "description": "Whether `toDataURL` succeeded. False does NOT mean the canvas is invisible — a tainted canvas is unreadable by script and perfectly visible on screen, which is why a composited screenshot is attempted separately."
+        },
+        "readbackReason": { "type": ["string", "null"] },
+
+        "contextType": { "type": ["string", "null"], "description": "The context actually found on the element. Null means none was identified." },
+        "contextProbed": { "type": ["boolean", "null"], "description": "Probing can CREATE a context on a canvas that had none, which is a mutation of the page, so whether it ran is recorded." },
+        "webgl": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Present only when a WebGL context was identified. `vendor` and `renderer` appear only when the browser exposed WEBGL_debug_renderer_info. Nothing here licenses a claim about Three.js, WebGPU, shaders or any library: those are not observable from a context handle.",
+          "properties": {
+            "vendor": { "type": ["string", "null"] },
+            "renderer": { "type": ["string", "null"] },
+            "version": { "type": ["string", "null"] },
+            "exposed": { "type": ["boolean", "null"] }
+          }
+        },
+
+        "raster": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "properties": {
+            "method": {
+              "enum": ["toDataURL", "region-screenshot", null],
+              "description": "Which produced the file. `toDataURL` is the canvas's own backing store. `region-screenshot` is what the browser composited at that rectangle — it includes anything painted OVER the canvas, so a reader must know which they are looking at."
+            },
+            "relativePath": { "type": ["string", "null"] },
+            "bytes": { "type": ["number", "null"] },
+            "reason": { "type": ["string", "null"] }
+          }
+        },
+
+        "pixelChange": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "A summary of `timeSeries`, kept in this shape because consumers already read it.",
+          "properties": {
+            "tested": { "type": "boolean" },
+            "changed": { "type": ["boolean", "null"] },
+            "reason": { "type": ["string", "null"] }
+          }
+        },
+
+        "timeSeries": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Backing-store reads at spreading intervals while the page is at rest, taken BEFORE anything scrolls. Every sample is a hash of the encoded image, never its byte length: two frames of one animation often encode to the same length, so a length comparison reports 'unchanged' for a canvas that is visibly moving. The spread exists because evenly spaced samples miss a canvas whose redraw interval matches the spacing.",
+          "properties": {
+            "tested": { "type": "boolean" },
+            "offsets": { "type": "array", "items": { "type": "number" } },
+            "samples": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "atMs": { "type": "number" },
+                  "signature": { "type": "string" },
+                  "bytes": { "type": ["number", "null"] }
+                }
+              }
+            },
+            "distinctSignatures": { "type": ["number", "null"] },
+            "changed": { "type": ["boolean", "null"] },
+            "classification": { "enum": ["static", "animated", "unresolved", null] },
+            "reason": { "type": ["string", "null"] }
+          }
+        },
+
+        "scrollSampling": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
+          "description": "Backing-store reads before scrolling and again at each checkpoint, per viewport. Kept separate from `timeSeries` because a canvas that redraws on scroll and one that redraws on a timer are different behaviours, and merging the samples would make them indistinguishable. Composited screenshots never enter this series — they would show changes caused by elements painted over the canvas.",
+          "properties": {
+            "readable": { "type": ["boolean", "null"] },
+            "before": { "type": ["string", "null"] },
+            "changed": { "type": ["boolean", "null"] },
+            "reason": { "type": ["string", "null"] },
+            "checkpoints": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "scrollY": { "type": "number" },
+                  "readable": { "type": ["boolean", "null"] },
+                  "signature": { "type": ["string", "null"] },
+                  "changedFromBefore": { "type": ["boolean", "null"] },
+                  "reason": { "type": ["string", "null"] }
+                }
+              }
+            }
+          }
+        },
+
+        "changeSource": {
+          "type": ["string", "null"],
+          "description": "Where the change was seen: at rest, on scroll only, or both. Null when nothing changed or nothing could be tested."
+        },
+
+        "classification": {
+          "enum": ["static", "animated", "unresolved"],
+          "description": "`unresolved` when change could not be tested. It is not a synonym for static: a canvas whose pixels cannot be read may be animating vigorously."
+        }
+      }
+    }
+  }
+}

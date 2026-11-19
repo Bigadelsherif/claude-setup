@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "helmy/fidelity-comparison",
+  "title": "Per-viewport Fidelity Comparison",
+  "description": "One viewport's complete result. Viewports are never averaged: a composite would hide a broken 375px layout behind three working ones. `compositeScore` is structurally pinned to null.",
+  "type": "object",
+  "required": ["viewport", "contentMode", "categories", "compositeScore", "readiness"],
+  "additionalProperties": true,
+  "properties": {
+    "viewport": {
+      "type": "object",
+      "required": ["width"],
+      "additionalProperties": true,
+      "properties": {
+        "width": { "type": "number" },
+        "height": { "type": ["number", "null"] },
+        "devicePixelRatio": { "type": ["number", "null"] }
+      }
+    },
+    "contentMode": {
+      "type": "object",
+      "required": ["mode", "status", "comparativePixelAllowed"],
+      "additionalProperties": true,
+      "properties": {
+        "mode": { "type": "string", "enum": ["equivalent-content", "independent-content"] },
+        "status": {
+          "type": "string",
+          "enum": ["verified", "declared", "declared-unverified", "not-applicable", "refused"]
+        },
+        "comparativePixelAllowed": { "type": "boolean" },
+        "verificationMethod": { "type": "array", "items": { "type": "string" } },
+        "unmetConditions": { "type": "array", "items": { "type": "string" } },
+        "thresholdValidated": { "const": false }
+      }
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["category", "score", "evidenceCoverage", "mismatchCount"],
+        "additionalProperties": true,
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "region-coverage", "layout", "typography", "spacing", "color",
+              "components", "states", "responsive", "motion", "accessibility",
+              "intrinsic-visual", "comparative-pixel-residue"
+            ]
+          },
+          "score": {
+            "type": ["number", "null"],
+            "description": "null when the category has no valid evidence. Never 0 for that case: zero reads as total disagreement, null says the question was not asked."
+          },
+          "evidenceCoverage": { "type": "number" },
+          "mismatchCount": { "type": "number" },
+          "severityDistribution": { "type": "object" },
+          "unresolvedClaims": { "type": "array", "items": { "type": "string" } },
+          "confidence": { "type": ["number", "null"] },
+          "blockers": { "type": "array" },
+          "limitations": { "type": "array" }
+        }
+      }
+    },
+    "compositeScore": {
+      "const": null,
+      "description": "Structurally pinned. No composite is produced at category, viewport or run level."
+    },
+    "readiness": {
+      "type": "string",
+      "enum": ["ready", "ready-with-warnings", "not-ready", "requires-additional-validation", "blocked"]
+    },
+    "differences": { "type": "array" },
+    "intrinsicFindings": { "type": "array" },
+    "states": { "type": "array" },
+    "blockers": { "type": "array" },
+    "evidenceLimitations": { "type": "array" }
+  }
+}

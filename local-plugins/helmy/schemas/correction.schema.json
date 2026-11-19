@@ -1,0 +1,384 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "helmy/correction",
+  "title": "Correction Record",
+  "type": "object",
+  "required": [
+    "id",
+    "referenceId",
+    "category",
+    "claim",
+    "original",
+    "corrected",
+    "reason",
+    "scope",
+    "recurrenceCount",
+    "promotionStatus"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^corr_[0-9]{4,}$"
+    },
+    "referenceId": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "factual-claim",
+        "evidence-interpretation",
+        "source-classification",
+        "component-identity",
+        "selector-classification",
+        "token-role",
+        "region",
+        "confidence",
+        "reference-scoped-preference",
+        "project-preference",
+        "global-rule-candidate",
+        "measurement",
+        "color",
+        "token"
+      ],
+      "description": "The kind of judgement. `measurement`, `color` and `token` are the pre-Phase-5.7 vocabulary, accepted so that records this system already wrote remain valid. New records use the current names."
+    },
+    "targetEvidenceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1
+    },
+    "original": {
+      "type": "object",
+      "description": "Both sides of every pair are recorded. A record carrying only the new value would be indistinguishable from a measurement.",
+      "properties": {
+        "value": {},
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "candidates": {
+          "type": "array"
+        }
+      }
+    },
+    "corrected": {
+      "type": "object",
+      "description": "Both sides of every pair are recorded. A record carrying only the new value would be indistinguishable from a measurement.",
+      "properties": {
+        "value": {},
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "candidates": {
+          "type": "array"
+        }
+      }
+    },
+    "evidence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "affects": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "extractor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "heuristic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "module": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "reference",
+        "workspace",
+        "project",
+        "preference",
+        "global-candidate",
+        "global"
+      ],
+      "description": "How far the correction reaches. `global` is the pre-Phase-5.7 name for what is now `global-candidate`; the rename is deliberate, because the old name read as though promotion had already happened."
+    },
+    "recurrenceCount": {
+      "type": "number",
+      "minimum": 1
+    },
+    "promotionStatus": {
+      "type": "string",
+      "enum": [
+        "reference-scoped",
+        "project-scoped",
+        "global-candidate",
+        "promoted",
+        "demoted",
+        "pending",
+        "reference-only"
+      ],
+      "description": "How far the correction has travelled toward being a rule. `pending` and `reference-only` are the pre-Phase-5.7 vocabulary, kept valid for records already on disk."
+    },
+    "promotedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ruleToAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "$schemaVersion": {
+      "type": "string"
+    },
+    "author": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Who filed it. A correction is a person's judgement entering a system that otherwise only reports what it measured; the record says whose."
+    },
+    "workspaceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sourceKind": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "url",
+        "screenshots",
+        "dom",
+        "computed-style",
+        "visual-model",
+        null
+      ]
+    },
+    "reviewStatus": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "accepted",
+        "rejected",
+        "superseded",
+        "blocked"
+      ]
+    },
+    "acceptedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rejectedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rejectionReason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "blockedReason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "blockedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "validationFailures": {
+      "type": "array"
+    },
+    "supersedes": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The correction this replaces. Both records survive."
+    },
+    "supersededBy": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "supersededAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "correctionOfEarlierRecord": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Set when a later record corrects an earlier record's DIAGNOSIS rather than its value. 'The previous fix was wrong about what was wrong' is a different statement from 'the previous fix was wrong'."
+    },
+    "affectedProjections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "affectedArtifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "previousIrHash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resultingIrHash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previousArtifactHashes": {
+      "type": "object"
+    },
+    "resultingArtifactHashes": {
+      "type": "object"
+    },
+    "promotedBy": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "promotionWitnesses": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "demotedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "demotionReason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "$event": {
+      "type": "string"
+    },
+    "$recordedAt": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "claimState": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "array",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "measured",
+            "observed",
+            "inferred",
+            "estimated",
+            "unknown"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  },
+  "description": "A record written before Phase 5.7 carries no `reviewStatus`; it is still a valid record, and the absence means it predates the review workflow rather than that it was never reviewed."
+}

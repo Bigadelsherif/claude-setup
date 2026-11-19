@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal hand-written Synfig document (format version 1.2, Synfig 1.4+/1.5+).
+     480x270 px, default view-box = 8 x 4.5 units (60 px per unit), y axis up.
+     Layers: first in file = bottom of the stack. -->
+<canvas version="1.2" width="480" height="270" xres="2834.645669" yres="2834.645669"
+        view-box="-4.000000 2.250000 4.000000 -2.250000" antialias="1"
+        fps="24.000" begin-time="0f" end-time="2s"
+        bgcolor="1.000000 1.000000 1.000000 1.000000">
+  <name>Bouncing ball</name>
+  <keyframe time="1s" active="true">impact</keyframe>
+  <defs>
+    <color id="ball_color">
+      <r>0.950000</r>
+      <g>0.350000</g>
+      <b>0.150000</b>
+      <a>1.000000</a>
+    </color>
+  </defs>
+
+  <!-- Bottom: solid background (bgcolor alone is not rendered into PNG alpha) -->
+  <layer type="solid_color" active="true" exclude_from_rendering="false" version="0.1" desc="Background">
+    <param name="color">
+      <color><r>0.960000</r><g>0.950000</g><b>0.920000</b><a>1.000000</a></color>
+    </param>
+  </layer>
+
+  <!-- Floor -->
+  <layer type="rectangle" active="true" exclude_from_rendering="false" version="0.2" desc="Floor">
+    <param name="color">
+      <color><r>0.200000</r><g>0.200000</g><b>0.250000</b><a>1.000000</a></color>
+    </param>
+    <param name="point1">
+      <vector><x>-4.0</x><y>-1.6</y></vector>
+    </param>
+    <param name="point2">
+      <vector><x>4.0</x><y>-2.25</y></vector>
+    </param>
+  </layer>
+
+  <!-- Ball: animated centre (origin) and radius, colour linked to an exported value -->
+  <layer type="circle" active="true" exclude_from_rendering="false" version="0.2" desc="Ball">
+    <param name="color" use="ball_color"/>
+    <param name="radius">
+      <animated type="real">
+        <waypoint time="0s" before="clamped" after="clamped"><real value="0.5"/></waypoint>
+        <waypoint time="1s" before="linear" after="linear"><real value="0.42"/></waypoint>
+        <waypoint time="2s" before="clamped" after="clamped"><real value="0.5"/></waypoint>
+      </animated>
+    </param>
+    <param name="origin">
+      <animated type="vector">
+        <waypoint time="0s" before="clamped" after="clamped">
+          <vector><x>-3.0</x><y>1.2</y></vector>
+        </waypoint>
+        <waypoint time="1s" before="linear" after="linear">
+          <vector><x>0.0</x><y>-1.1</y></vector>
+        </waypoint>
+        <waypoint time="2s" before="clamped" after="clamped">
+          <vector><x>3.0</x><y>1.2</y></vector>
+        </waypoint>
+      </animated>
+    </param>
+  </layer>
+</canvas>

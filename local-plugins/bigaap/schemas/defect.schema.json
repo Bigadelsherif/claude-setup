@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/defect",
+  "title": "Defect Report",
+  "description": "An extractor or selection failure. Distinct from a correction: a correction fixes a wrong claim about a site, a defect report records that the code produced locally-defensible claims about the wrong thing. Corrections must never be used to patch code-level failures.",
+  "type": "object",
+  "required": [
+    "id",
+    "category",
+    "module",
+    "observation",
+    "expected",
+    "actual",
+    "severity",
+    "recurrenceCount",
+    "regressionTest",
+    "promotionStatus",
+    "scope"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^def_[0-9]{4,}$" },
+    "createdAt": { "type": "string" },
+    "category": {
+      "type": "string",
+      "enum": [
+        "sampling-region",
+        "coverage-blind-confidence",
+        "grouping",
+        "token-emission",
+        "background-image-reporting",
+        "breakpoint-normalization",
+        "state-induction",
+        "surface-resolution",
+        "transport",
+        "other"
+      ]
+    },
+    "module": {
+      "type": "string",
+      "description": "Path of the module that produced the failure."
+    },
+    "heuristic": { "type": ["string", "null"] },
+    "observation": { "type": "string", "minLength": 1 },
+    "expected": { "type": "string", "minLength": 1 },
+    "actual": { "type": "string", "minLength": 1 },
+    "reproducingCapture": {
+      "type": ["string", "null"],
+      "description": "Path to the raw capture that reproduces the defect."
+    },
+    "affectedEvidence": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Evidence ids whose values are suspect because of this defect."
+    },
+    "affectedClaims": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "proposedRule": { "type": ["string", "null"] },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"]
+    },
+    "recurrenceCount": { "type": "number", "minimum": 1 },
+    "regressionTest": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["none", "written", "failing", "passing"]
+        },
+        "file": { "type": ["string", "null"] },
+        "name": { "type": ["string", "null"] }
+      }
+    },
+    "promotionStatus": {
+      "type": "string",
+      "enum": ["open", "in-progress", "fixed", "wont-fix", "duplicate"]
+    },
+    "fixedIn": { "type": ["string", "null"] },
+    "scope": {
+      "type": "string",
+      "enum": ["global", "reference", "capture-tier"]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bigaap/driver-error",
+  "title": "Driver Error",
+  "description": "Sixteen categories, deliberately not collapsed. Recovery branches on the category, so an unclassifiable failure becomes `unknown-driver-error` rather than being forced into a neighbouring category — a wrong category routes recovery wrongly, which is worse than admitting the error is unclassified.",
+  "type": "object",
+  "required": ["code", "message"],
+  "additionalProperties": true,
+  "properties": {
+    "code": {
+      "type": "string",
+      "enum": [
+        "startup-failed", "browser-unavailable", "navigation-timeout", "network-failure",
+        "page-error", "script-injection-failed", "screenshot-failed", "selector-not-found",
+        "state-trigger-failed", "font-timeout", "asset-timeout", "viewport-invalid",
+        "authentication-required", "content-not-ready", "cleanup-failed", "unknown-driver-error"
+      ]
+    },
+    "message": { "type": "string" },
+    "operation": { "type": ["string", "null"] },
+    "detail": {},
+    "cause": { "type": ["string", "null"], "description": "The underlying implementation message, preserved for reading but never branched on." }
+  }
+}

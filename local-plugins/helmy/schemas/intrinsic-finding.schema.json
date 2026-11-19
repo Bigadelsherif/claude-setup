@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "helmy/intrinsic-finding",
+  "title": "Intrinsic Visual Finding",
+  "description": "A single-render property of the target, checked without any comparison. These survive content differences, which is what makes them the backbone of independent-content mode. `correlation` records whether the reference exhibits the same condition — if it does, the finding is demoted rather than reported as a target defect.",
+  "type": "object",
+  "required": ["id", "rule", "viewport", "targetEvidence", "severity", "actionable", "correlation", "detectionMethod"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "rule": {
+      "type": "string",
+      "enum": [
+        "content-overflows-the-viewport",
+        "text-is-clipped",
+        "stacking-order-inverted"
+      ],
+      "description": "The three checks implemented so far. The plan's remaining ten are not implemented in the vertical slice and must not be listed here until they are."
+    },
+    "viewport": { "type": "number" },
+    "targetEvidence": {
+      "type": "object",
+      "required": ["selector"],
+      "additionalProperties": true,
+      "properties": {
+        "selector": { "type": ["string", "null"] },
+        "occludedBy": { "type": ["string", "null"] },
+        "detail": { "type": ["string", "null"] }
+      }
+    },
+    "affectedRegion": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "properties": {
+        "x": { "type": "number" }, "y": { "type": "number" },
+        "width": { "type": "number" }, "height": { "type": "number" }
+      }
+    },
+    "detectionMethod": {
+      "type": "string",
+      "enum": ["hit-test", "box-measurement", "computed-style", "natural-size"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low", "informational"]
+    },
+    "confidence": { "type": ["number", "null"] },
+    "actionable": { "type": "boolean" },
+    "correlation": {
+      "type": "string",
+      "enum": ["target-only", "reference-correlated"],
+      "description": "reference-correlated findings are demoted to informational: a target reproducing the reference's condition is reproducing the reference."
+    },
+    "note": { "type": ["string", "null"] }
+  }
+}

@@ -1,0 +1,3 @@
+- [Krea: cheap model only](krea-ask-first.md) — default flux-2-klein; other models (e.g. qwen/2512) only when user names them; always report credits
+- [B2B direction](b2b-direction.md) — real site is B2B paper fresheners as ads; /drift is main, Hangtime is private
+- [Dar Senosi code rules](dar-senosi-code-rules.md) — redesign theme: replace/remove old code if Shopify-safe; live theme untouchable
