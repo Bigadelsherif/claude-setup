@@ -114,5 +114,15 @@ if ($SkipPlaywright) {
   Write-Warning 'Python not found, so Playwright was skipped. Install Python 3, then run install.ps1 again.'
 }
 
+Write-Host 'Bun (for the reanimate skill)'
+if ($SkipPlaywright) {
+  Write-Host 'Skipped.'
+} elseif ((Get-Command bun -ErrorAction SilentlyContinue) -or (Test-Path "$HOME\.bun\bin\bun.exe")) {
+  Write-Host 'Already installed.'
+} else {
+  # Official installer from bun.sh; it adds Bun to your PATH.
+  Invoke-RestMethod https://bun.sh/install.ps1 | Invoke-Expression
+}
+
 Write-Host ''
 Write-Host 'Done. Quit and reopen Claude so it loads everything.'

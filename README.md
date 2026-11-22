@@ -13,6 +13,7 @@ Anthropic skills) come back on their own when you sign in.
 2. Install [Git](https://git-scm.com/download/win), [GitHub CLI](https://cli.github.com),
    [Node.js](https://nodejs.org) (for the radix, ark and shadcn MCP servers) and
    [Python 3](https://www.python.org/downloads/) (for Playwright).
+   The installer adds [Bun](https://bun.sh) itself (for the reanimate skill).
    Optional: [uv](https://docs.astral.sh/uv/) for the Blender MCP server.
 3. In PowerShell:
 
