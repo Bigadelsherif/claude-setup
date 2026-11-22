@@ -2,3 +2,4 @@
 - [Homepage sections restraint](homepage-sections-restraint.md) — under the hero: normal marketplace layout, luxury through quality, no set-pieces
 - [Cinematic, not cartoon](cinematic-not-cartoon.md) — client visuals: dark violet stage, rim light, faces visible; no flat cartoon art
 - [Client rejected redesign](client-rejected-redesign.md) — 7 Nov 2026: client wants something more interesting; choose a bolder direction from references
+- [No video deletion in recovery](recovery-no-video-deletion.md) — My Passport recovery on Windows: sort videos, never delete them
